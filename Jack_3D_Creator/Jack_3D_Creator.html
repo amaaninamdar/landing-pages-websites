@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en" class="bg-[#0C0C0C] scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jack -- 3D Creator</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+    
+    <!-- Google Font: Kanit (weights 300-900) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              darkBg: '#0C0C0C',
+              accentLight: '#D7E2EA',
+            },
+            fontFamily: {
+              sans: ['Kanit', 'sans-serif'],
+              kanit: ['Kanit', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html, body {
+        background-color: #0C0C0C;
+        color: #D7E2EA;
+        font-family: 'Kanit', sans-serif;
+        overflow-x: clip;
+      }
+
+      .hero-heading {
+        background: linear-gradient(180deg, #646973 0%, #BBCCD7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .contact-btn {
+        background: linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%);
+        box-shadow: 0px 4px 4px rgba(181, 1, 167, 0.25), inset 4px 4px 12px #7721B1;
+        outline: 2px solid white;
+        outline-offset: -3px;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+      }
+      .contact-btn:hover {
+        transform: scale(1.04);
+      }
+      .contact-btn:active {
+        transform: scale(0.97);
+      }
+
+      .live-project-btn {
+        transition: transform 0.2s ease, background-color 0.2s ease;
+      }
+      .live-project-btn:hover {
+        transform: scale(1.03);
+        background-color: rgba(215, 226, 234, 0.1);
+      }
+      .live-project-btn:active {
+        transform: scale(0.97);
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0C0C0C;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #25282F;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #3A3F4B;
+      }
+
+      /* Fade in animation styles */
+      .fade-in-element {
+        opacity: 0;
+        transform: translate3d(var(--fade-x, 0px), var(--fade-y, 30px), 0);
+        transition: opacity var(--fade-duration, 0.7s) cubic-bezier(0.25, 0.1, 0.25, 1),
+                    transform var(--fade-duration, 0.7s) cubic-bezier(0.25, 0.1, 0.25, 1);
+        transition-delay: var(--fade-delay, 0s);
+        will-change: opacity, transform;
+      }
+      .fade-in-element.is-visible {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    </style>
+  </head>
+  <body class="bg-[#0C0C0C] text-[#D7E2EA] font-sans antialiased selection:bg-[#B600A8] selection:text-white" style="overflow-x: clip;">
+
+    <!-- ==================== 1. HERO SECTION ==================== -->
+    <section id="hero" class="relative h-screen flex flex-col justify-between overflow-x-clip bg-[#0C0C0C]">
+      
+      <!-- Navbar -->
+      <nav class="w-full relative z-20 fade-in-element" style="--fade-delay: 0s; --fade-y: -20px;">
+        <ul class="flex justify-between items-center w-full px-6 md:px-10 pt-6 md:pt-8 list-none">
+          <li>
+            <a href="#about" class="text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem] hover:opacity-70 transition-opacity duration-200">
+              About
+            </a>
+          </li>
+          <li>
+            <a href="#services" class="text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem] hover:opacity-70 transition-opacity duration-200">
+              Price
+            </a>
+          </li>
+          <li>
+            <a href="#projects" class="text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem] hover:opacity-70 transition-opacity duration-200">
+              Projects
+            </a>
+          </li>
+          <li>
+            <a href="#contact" class="text-[#D7E2EA] font-medium uppercase tracking-wider text-sm md:text-lg lg:text-[1.4rem] hover:opacity-70 transition-opacity duration-200">
+              Contact
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Hero Heading Container -->
+      <div class="w-full overflow-hidden flex-1 flex flex-col justify-center items-center relative z-0 mt-6 sm:mt-4 md:-mt-5">
+        <div class="w-full text-center select-none fade-in-element" style="--fade-delay: 0.15s; --fade-y: 40px;">
+          <h1 class="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap w-full text-[14vw] sm:text-[15vw] md:text-[16vw] lg:text-[17.5vw]">
+            Hi, i&apos;m jack
+          </h1>
+        </div>
+      </div>
+
+      <!-- Hero Portrait with Magnet -->
+      <div class="absolute left-1/2 -translate-x-1/2 z-10 w-[280px] sm:w-[360px] md:w-[440px] lg:w-[520px] top-1/2 -translate-y-1/2 sm:top-auto sm:translate-y-0 sm:bottom-0 pointer-events-none">
+        <div class="w-full flex justify-center fade-in-element" style="--fade-delay: 0.6s; --fade-y: 30px;">
+          <div id="hero-magnet" class="w-full flex justify-center pointer-events-auto cursor-pointer" style="will-change: transform; transition: transform 0.6s ease-in-out;">
+            <img
+              src="https://shrug-person-78902957.figma.site/_components/v2/d24c01ad3a56fc65e942a1f501eb73db42d7cf9a/Rectangle_40443.81459862.png"
+              alt="Jack - 3D Creator Portrait"
+              class="w-full h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none"
+              draggable="false"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="relative z-20 flex justify-between items-end px-6 md:px-10 pb-7 sm:pb-8 md:pb-10 w-full">
+        <!-- Left text -->
+        <div class="max-w-[160px] sm:max-w-[220px] md:max-w-[260px] fade-in-element" style="--fade-delay: 0.35s; --fade-y: 20px;">
+          <p class="text-[#D7E2EA] font-light uppercase tracking-wide leading-snug" style="font-size: clamp(0.75rem, 1.4vw, 1.5rem);">
+            a 3d creator driven by crafting striking and unforgettable projects
+          </p>
+        </div>
+
+        <!-- Right Contact Button -->
+        <div class="fade-in-element" style="--fade-delay: 0.5s; --fade-y: 20px;">
+          <a
+            href="#contact"
+            class="contact-btn inline-flex items-center justify-center rounded-full text-white font-medium uppercase tracking-widest cursor-pointer select-none px-8 py-3 sm:px-10 sm:py-3.5 md:px-12 md:py-4 text-xs sm:text-sm md:text-base"
+          >
+            Contact Me
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 2. MARQUEE SECTION ==================== -->
+    <section id="marquee" class="relative bg-[#0C0C0C] pt-24 sm:pt-32 md:pt-40 pb-10 overflow-hidden">
+      <div class="flex flex-col gap-3 w-full">
+        <!-- Row 1: Moves RIGHT on scroll -->
+        <div class="w-full overflow-visible">
+          <div id="marquee-row-1" class="flex gap-3 will-change-transform">
+            <!-- Row 1 images populated via JS -->
+          </div>
+        </div>
+
+        <!-- Row 2: Moves LEFT on scroll -->
+        <div class="w-full overflow-visible">
+          <div id="marquee-row-2" class="flex gap-3 will-change-transform">
+            <!-- Row 2 images populated via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 3. ABOUT SECTION ==================== -->
+    <section id="about" class="relative min-h-screen flex flex-col justify-center items-center px-5 sm:px-8 md:px-10 py-20 bg-[#0C0C0C] overflow-hidden">
+      
+      <!-- Top-Left: Moon icon -->
+      <div class="absolute top-[4%] left-[1%] sm:left-[2%] md:left-[4%] z-0 pointer-events-none fade-in-element" style="--fade-delay: 0.1s; --fade-x: -80px; --fade-y: 0px; --fade-duration: 0.9s;">
+        <img
+          src="https://shrug-person-78902957.figma.site/_components/v2/ebb2b8f25d8e24d5f0a5ca8af4c950de81aa2fd7/moon_icon.11395d36.png"
+          alt="Moon 3D icon"
+          class="w-[120px] sm:w-[160px] md:w-[210px] h-auto object-contain select-none opacity-85 hover:opacity-100 transition-opacity"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- Bottom-Left: 3D Object -->
+      <div class="absolute bottom-[8%] left-[3%] sm:left-[6%] md:left-[10%] z-0 pointer-events-none fade-in-element" style="--fade-delay: 0.25s; --fade-x: -80px; --fade-y: 0px; --fade-duration: 0.9s;">
+        <img
+          src="https://shrug-person-78902957.figma.site/_components/v2/ebb2b8f25d8e24d5f0a5ca8af4c950de81aa2fd7/p59_1.4659672e.png"
+          alt="Geometric 3D Object"
+          class="w-[100px] sm:w-[140px] md:w-[180px] h-auto object-contain select-none opacity-85 hover:opacity-100 transition-opacity"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- Top-Right: Lego icon -->
+      <div class="absolute top-[4%] right-[1%] sm:right-[2%] md:right-[4%] z-0 pointer-events-none fade-in-element" style="--fade-delay: 0.15s; --fade-x: 80px; --fade-y: 0px; --fade-duration: 0.9s;">
+        <img
+          src="https://shrug-person-78902957.figma.site/_components/v2/ebb2b8f25d8e24d5f0a5ca8af4c950de81aa2fd7/lego_icon-1.703bb594.png"
+          alt="Lego 3D icon"
+          class="w-[120px] sm:w-[160px] md:w-[210px] h-auto object-contain select-none opacity-85 hover:opacity-100 transition-opacity"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- Bottom-Right: 3D Group -->
+      <div class="absolute bottom-[8%] right-[3%] sm:right-[6%] md:right-[10%] z-0 pointer-events-none fade-in-element" style="--fade-delay: 0.3s; --fade-x: 80px; --fade-y: 0px; --fade-duration: 0.9s;">
+        <img
+          src="https://shrug-person-78902957.figma.site/_components/v2/ebb2b8f25d8e24d5f0a5ca8af4c950de81aa2fd7/Group_134-1.2e04f3ce.png"
+          alt="Abstract 3D Shape Group"
+          class="w-[130px] sm:w-[170px] md:w-[220px] h-auto object-contain select-none opacity-85 hover:opacity-100 transition-opacity"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- Centered Content -->
+      <div class="flex flex-col items-center text-center relative z-10 max-w-4xl mx-auto">
+        <div class="fade-in-element" style="--fade-delay: 0s; --fade-y: 40px;">
+          <h2 class="hero-heading font-black uppercase leading-none tracking-tight text-center select-none" style="font-size: clamp(3rem, 12vw, 160px);">
+            About me
+          </h2>
+        </div>
+
+        <!-- Animated Text with character scroll reveal -->
+        <div class="mt-10 sm:mt-14 md:mt-16 flex justify-center w-full">
+          <p id="animated-about-text" class="text-[#D7E2EA] font-medium text-center leading-relaxed max-w-[560px]" style="font-size: clamp(1rem, 2vw, 1.35rem);">
+            <!-- Populated via script for character scroll opacity animation -->
+          </p>
+        </div>
+
+        <!-- Contact Button -->
+        <div class="mt-16 sm:mt-20 md:mt-24 fade-in-element" style="--fade-delay: 0.2s; --fade-y: 20px;">
+          <a
+            href="#contact"
+            class="contact-btn inline-flex items-center justify-center rounded-full text-white font-medium uppercase tracking-widest cursor-pointer select-none px-8 py-3 sm:px-10 sm:py-3.5 md:px-12 md:py-4 text-xs sm:text-sm md:text-base"
+          >
+            Contact Me
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 4. SERVICES SECTION ==================== -->
+    <section id="services" class="relative bg-[#FFFFFF] text-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 z-0">
+      <div class="max-w-5xl mx-auto">
+        
+        <!-- Heading -->
+        <div class="fade-in-element" style="--fade-delay: 0s; --fade-y: 40px;">
+          <h2 class="text-[#0C0C0C] font-black uppercase text-center leading-none tracking-tight mb-16 sm:mb-20 md:mb-28 select-none" style="font-size: clamp(3rem, 12vw, 160px);">
+            Services
+          </h2>
+        </div>
+
+        <!-- Services List -->
+        <div class="flex flex-col border-t border-[rgba(12,12,12,0.15)]">
+          
+          <!-- 01 -->
+          <div class="border-b border-[rgba(12,12,12,0.15)] py-8 sm:py-10 md:py-12 fade-in-element" style="--fade-delay: 0s; --fade-y: 30px;">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8 md:gap-14 group">
+              <span class="font-black text-[#0C0C0C] leading-none select-none w-[90px] sm:w-[140px] md:w-[180px] lg:w-[220px] flex-shrink-0 transition-transform duration-300 group-hover:translate-x-2" style="font-size: clamp(3rem, 10vw, 140px);">
+                01
+              </span>
+              <div class="flex-1 flex flex-col justify-center">
+                <h3 class="font-medium uppercase text-[#0C0C0C] leading-tight mb-2 sm:mb-3 tracking-wide" style="font-size: clamp(1rem, 2.2vw, 2.1rem);">
+                  3D Modeling
+                </h3>
+                <p class="font-light leading-relaxed max-w-2xl text-[#0C0C0C]/60" style="font-size: clamp(0.85rem, 1.6vw, 1.25rem);">
+                  Creation of detailed objects, characters, or environments tailored to specific client needs, ideal for games, products, and visualizations.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 02 -->
+          <div class="border-b border-[rgba(12,12,12,0.15)] py-8 sm:py-10 md:py-12 fade-in-element" style="--fade-delay: 0.1s; --fade-y: 30px;">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8 md:gap-14 group">
+              <span class="font-black text-[#0C0C0C] leading-none select-none w-[90px] sm:w-[140px] md:w-[180px] lg:w-[220px] flex-shrink-0 transition-transform duration-300 group-hover:translate-x-2" style="font-size: clamp(3rem, 10vw, 140px);">
+                02
+              </span>
+              <div class="flex-1 flex flex-col justify-center">
+                <h3 class="font-medium uppercase text-[#0C0C0C] leading-tight mb-2 sm:mb-3 tracking-wide" style="font-size: clamp(1rem, 2.2vw, 2.1rem);">
+                  Rendering
+                </h3>
+                <p class="font-light leading-relaxed max-w-2xl text-[#0C0C0C]/60" style="font-size: clamp(0.85rem, 1.6vw, 1.25rem);">
+                  High-quality, photorealistic renders that showcase designs with custom lighting, textures, and materials to bring concepts to life.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 03 -->
+          <div class="border-b border-[rgba(12,12,12,0.15)] py-8 sm:py-10 md:py-12 fade-in-element" style="--fade-delay: 0.2s; --fade-y: 30px;">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8 md:gap-14 group">
+              <span class="font-black text-[#0C0C0C] leading-none select-none w-[90px] sm:w-[140px] md:w-[180px] lg:w-[220px] flex-shrink-0 transition-transform duration-300 group-hover:translate-x-2" style="font-size: clamp(3rem, 10vw, 140px);">
+                03
+              </span>
+              <div class="flex-1 flex flex-col justify-center">
+                <h3 class="font-medium uppercase text-[#0C0C0C] leading-tight mb-2 sm:mb-3 tracking-wide" style="font-size: clamp(1rem, 2.2vw, 2.1rem);">
+                  Motion Design
+                </h3>
+                <p class="font-light leading-relaxed max-w-2xl text-[#0C0C0C]/60" style="font-size: clamp(0.85rem, 1.6vw, 1.25rem);">
+                  Dynamic animations and motion graphics that add energy and storytelling to brands, products, and digital experiences.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 04 -->
+          <div class="border-b border-[rgba(12,12,12,0.15)] py-8 sm:py-10 md:py-12 fade-in-element" style="--fade-delay: 0.3s; --fade-y: 30px;">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8 md:gap-14 group">
+              <span class="font-black text-[#0C0C0C] leading-none select-none w-[90px] sm:w-[140px] md:w-[180px] lg:w-[220px] flex-shrink-0 transition-transform duration-300 group-hover:translate-x-2" style="font-size: clamp(3rem, 10vw, 140px);">
+                04
+              </span>
+              <div class="flex-1 flex flex-col justify-center">
+                <h3 class="font-medium uppercase text-[#0C0C0C] leading-tight mb-2 sm:mb-3 tracking-wide" style="font-size: clamp(1rem, 2.2vw, 2.1rem);">
+                  Branding
+                </h3>
+                <p class="font-light leading-relaxed max-w-2xl text-[#0C0C0C]/60" style="font-size: clamp(0.85rem, 1.6vw, 1.25rem);">
+                  Crafting cohesive visual identities -- from logos to full brand systems -- that communicate a clear and memorable presence.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 05 -->
+          <div class="border-b border-[rgba(12,12,12,0.15)] py-8 sm:py-10 md:py-12 fade-in-element" style="--fade-delay: 0.4s; --fade-y: 30px;">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8 md:gap-14 group">
+              <span class="font-black text-[#0C0C0C] leading-none select-none w-[90px] sm:w-[140px] md:w-[180px] lg:w-[220px] flex-shrink-0 transition-transform duration-300 group-hover:translate-x-2" style="font-size: clamp(3rem, 10vw, 140px);">
+                05
+              </span>
+              <div class="flex-1 flex flex-col justify-center">
+                <h3 class="font-medium uppercase text-[#0C0C0C] leading-tight mb-2 sm:mb-3 tracking-wide" style="font-size: clamp(1rem, 2.2vw, 2.1rem);">
+                  Web Design
+                </h3>
+                <p class="font-light leading-relaxed max-w-2xl text-[#0C0C0C]/60" style="font-size: clamp(0.85rem, 1.6vw, 1.25rem);">
+                  Designing clean, modern, and conversion-focused websites with attention to layout, typography, and user experience.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 5. PROJECTS SECTION ==================== -->
+    <section id="projects" class="relative bg-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] -mt-10 sm:-mt-12 md:-mt-14 z-10 px-5 sm:px-8 md:px-10 pt-20 sm:pt-24 md:pt-32 pb-32">
+      <div class="max-w-6xl mx-auto">
+        
+        <!-- Heading -->
+        <div class="fade-in-element mb-14 sm:mb-20 md:mb-24" style="--fade-delay: 0s; --fade-y: 40px;">
+          <h2 class="hero-heading font-black uppercase text-center leading-none tracking-tight select-none" style="font-size: clamp(3rem, 12vw, 160px);">
+            Project
+          </h2>
+        </div>
+
+        <!-- 3 Sticky-stacking project cards -->
+        <div class="relative flex flex-col">
+          
+          <!-- Card 01: Nextlevel Studio -->
+          <div class="project-container h-[85vh] min-h-[620px] sm:min-h-[720px] relative flex justify-center items-start w-full" data-index="0" data-target-scale="0.94">
+            <div class="project-card sticky w-full max-w-6xl rounded-[40px] sm:rounded-[50px] md:rounded-[60px] border-2 border-[#D7E2EA] bg-[#0C0C0C] p-4 sm:p-6 md:p-8 shadow-2xl origin-top" style="top: calc(clamp(5rem, 8vh, 7.5rem) + 0px);">
+              <!-- Top row -->
+              <div class="flex flex-wrap items-center justify-between gap-4 pb-6 sm:pb-8 border-b border-[#D7E2EA]/20">
+                <div class="flex flex-wrap items-baseline gap-3 sm:gap-6">
+                  <span class="font-black text-[#D7E2EA] leading-none select-none" style="font-size: clamp(2.5rem, 6vw, 5.5rem);">
+                    01
+                  </span>
+                  <div class="flex flex-col">
+                    <span class="text-xs sm:text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/60">
+                      (CLIENT)
+                    </span>
+                    <h3 class="text-lg sm:text-2xl md:text-3xl font-medium text-[#D7E2EA] uppercase tracking-wide">
+                      Nextlevel Studio
+                    </h3>
+                  </div>
+                </div>
+                <a href="#" class="live-project-btn inline-flex items-center justify-center rounded-full border-2 border-[#D7E2EA] text-[#D7E2EA] font-medium uppercase tracking-widest px-8 py-3 sm:px-10 sm:py-3.5 text-sm sm:text-base select-none">
+                  Live Project
+                </a>
+              </div>
+              <!-- Bottom row: Two-column image grid -->
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 pt-6 sm:pt-8 items-stretch">
+                <div class="md:col-span-5 flex flex-col gap-4 sm:gap-6 justify-between">
+                  <div class="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-[#161616]" style="height: clamp(130px, 16vw, 230px);">
+                    <img src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260412_055344_5eff02e0-87a5-41ce-b64f-eb08da8f33db.png&w=1280&q=85" alt="Nextlevel Studio 1" loading="lazy" class="w-full h-full object-cover select-none transition-transform duration-500 hover:scale-105" />
+                  </div>
+                  <div class="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-[#161616]" style="height: clamp(160px, 22vw, 340px);">
+                    <img src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260412_055431_11d841fd-8b41-46a5-82e4-b04f2407a7d8.png&w=1280&q=85" alt="Nextlevel Studio 2" loading="lazy" class="w-full h-full object-cover select-none transition-transform duration-500 hover:scale-105" />
+                  </div>
+                </div>
+                <div class="md:col-span-7 h-[280px] sm:h-[380px] md:h-full min-h-[280px] sm:min-h-[380px] md:min-h-[460px] rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-[#161616]">
+                  <img src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260412_055451_e317bf2d-28d4-48cc-86b0-6f72f25b6327.png&w=1280&q=85" alt="Nextlevel Studio full" loading="lazy" class="w-full h-full object-cover select-none transition-transform duration-500 hover:scale-105" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 02: Aura Brand Identity -->
+          <div class="project-container h-[85vh] min-h-[620px] sm:min-h-[720px] relative flex justify-center items-start w-full" data-index="1" data-target-scale="0.97">
+            <div class="project-card sticky w-full max-w-6xl rounded-[40px] sm:rounded-[50px] md:rounded-[60px] border-2 border-[#D7E2EA] bg-[#0C0C0C] p-4 sm:p-6 md:p-8 shadow-2xl origin-top" style="top: calc(clamp(5rem, 8vh, 7.5rem) + 28px);">
+              <!-- Top row -->
+              <div class="flex flex-wrap items-center justify-between gap-4 pb-6 sm:pb-8 border-b border-[#D7E2EA]/20">
+                <div class="flex flex-wrap items-baseline gap-3 sm:gap-6">
+                  <span class="font-black text-[#D7E2EA] leading-none select-none" style="font-size: clamp(2.5rem, 6vw, 5.5rem);">
+                    02
+                  </span>
+                  <div class="flex flex-col">
+                    <span class="text-xs sm:text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/60">
+                      (PERSONAL)
+                    </span>
+                    <h3 class="text-lg sm:text-2xl md:text-3xl font-medium text-[#D7E2EA] uppercase tracking-wide">
+                      Aura Brand Identity
+                    </h3>
+                  </div>
+                </div>
+                <a href="#" class="live-project-btn inline-flex items-center justify-center rounded-full border-2 border-[#D7E2EA] text-[#D7E2EA] font-medium uppercase tracking-widest px-8 py-3 sm:px-10 sm:py-3.5 text-sm sm:text-base select-none">
+                  Live Project
+                </a>
+              </div>
+              <!-- Bottom row: Two-column image grid -->
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 pt-6 sm:pt-8 items-stretch">
+                <div class="md:col-span-5 flex flex-col gap-4 sm:gap-6 justify-between">
+                  <div class="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-[#161616]" style="height: clamp(130px, 16vw, 230px);">
+                    <img src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260412_055654_911201c5-36d9-4bc6-bac7-331adfce159f.png&w=1280&q=85" alt="Aura Brand Identity 1" loading="lazy" class="w-full h-full object-cover select-none transition-transform duration-500 hover:scale-105" />
+                  </div>
+                  <div class="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-[#161616]" style="height: clamp(160px, 22vw, 340px);">
+                    <img src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260412_055723_5ceda0b8-d9c2-4665-b2e3-83ba19ba76d1.png&w=1280&q=85" alt="Aura Brand Identity 2" loading="lazy" class="w-full h-full object-cover select-none transition-transform duration-500 hover:scale-105" />
+                  </div>
+                </div>
+                <div class="md:col-span-7 h-[280px] sm:h-[380px] md:h-full min-h-[280px] sm:min-h-[380px] md:min-h-[460px] rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-[#161616]">
+                  <img src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260412_055753_adc5dcbd-a8e6-49c0-b43a-9b030d835cea.png&w=1280&q=85" alt="Aura Brand Identity full" loading="lazy" class="w-full h-full object-cover select-none transition-transform duration-500 hover:scale-105" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 03: Solaris Digital -->
+          <div class="project-container h-[85vh] min-h-[620px] sm:min-h-[720px] relative flex justify-center items-start w-full" data-index="2" data-target-scale="1.0">
+            <div class="project-card sticky w-full max-w-6xl rounded-[40px] sm:rounded-[50px] md:rounded-[60px] border-2 border-[#D7E2EA] bg-[#0C0C0C] p-4 sm:p-6 md:p-8 shadow-2xl origin-top" style="top: calc(clamp(5rem, 8vh, 7.5rem) + 56px);">
+              <!-- Top row -->
+              <div class="flex flex-wrap items-center justify-between gap-4 pb-6 sm:pb-8 border-b border-[#D7E2EA]/20">
+                <div class="flex flex-wrap items-baseline gap-3 sm:gap-6">
+                  <span class="font-black text-[#D7E2EA] leading-none select-none" style="font-size: clamp(2.5rem, 6vw, 5.5rem);">
+                    03
+                  </span>
+                  <div class="flex flex-col">
+                    <span class="text-xs sm:text-sm font-medium uppercase tracking-widest text-[#D7E2EA]/60">
+                      (CLIENT)
+                    </span>
+                    <h3 class="text-lg sm:text-2xl md:text-3xl font-medium text-[#D7E2EA] uppercase tracking-wide">
+                      Solaris Digital
+                    </h3>
+                  </div>
+                </div>
+                <a href="#" class="live-project-btn inline-flex items-center justify-center rounded-full border-2 border-[#D7E2EA] text-[#D7E2EA] font-medium uppercase tracking-widest px-8 py-3 sm:px-10 sm:py-3.5 text-sm sm:text-base select-none">
+                  Live Project
+                </a>
+              </div>
+              <!-- Bottom row: Two-column image grid -->
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 pt-6 sm:pt-8 items-stretch">
+                <div class="md:col-span-5 flex flex-col gap-4 sm:gap-6 justify-between">
+                  <div class="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-[#161616]" style="height: clamp(130px, 16vw, 230px);">
+                    <img src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260412_055759_963cfb0b-4bd1-4b0f-9d0a-09bd6cf95b2f.png&w=1280&q=85" alt="Solaris Digital 1" loading="lazy" class="w-full h-full object-cover select-none transition-transform duration-500 hover:scale-105" />
+                  </div>
+                  <div class="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-[#161616]" style="height: clamp(160px, 22vw, 340px);">
+                    <img src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260412_060108_438f781a-9846-4dcc-89ab-c4e6cb830f5b.png&w=1280&q=85" alt="Solaris Digital 2" loading="lazy" class="w-full h-full object-cover select-none transition-transform duration-500 hover:scale-105" />
+                  </div>
+                </div>
+                <div class="md:col-span-7 h-[280px] sm:h-[380px] md:h-full min-h-[280px] sm:min-h-[380px] md:min-h-[460px] rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-[#161616]">
+                  <img src="https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260412_055818_9d062121-ad7e-46b9-999a-1a6a692ef1ee.png&w=1280&q=85" alt="Solaris Digital full" loading="lazy" class="w-full h-full object-cover select-none transition-transform duration-500 hover:scale-105" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FOOTER / CONTACT ==================== -->
+    <footer id="contact" class="bg-[#0C0C0C] border-t border-[#D7E2EA]/10 py-16 px-6 md:px-10 relative z-20">
+      <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+        <div class="fade-in-element" style="--fade-delay: 0s; --fade-y: 20px;">
+          <p class="text-[#D7E2EA] font-black uppercase text-2xl tracking-tight hero-heading">
+            Jack &mdash; 3D Creator
+          </p>
+          <p class="text-[#D7E2EA]/60 text-sm font-light mt-1">
+            Crafting striking and unforgettable 3D visual experiences.
+          </p>
+        </div>
+        <div class="fade-in-element" style="--fade-delay: 0.1s; --fade-y: 20px;">
+          <a
+            href="mailto:hello@amaan3d.design"
+            class="contact-btn inline-flex items-center justify-center rounded-full text-white font-medium uppercase tracking-widest cursor-pointer select-none px-8 py-3 sm:px-10 sm:py-3.5 md:px-12 md:py-4 text-xs sm:text-sm md:text-base"
+          >
+            Contact Me
+          </a>
+        </div>
+      </div>
+
+      <div class="max-w-6xl mx-auto mt-12 pt-6 border-t border-[#D7E2EA]/5 flex flex-col sm:flex-row items-center justify-between text-xs text-[#D7E2EA]/40 gap-4">
+        <p>&copy; <span id="year">2026</span> Jack / Amaan. All rights reserved.</p>
+        <div class="flex gap-6 uppercase tracking-wider">
+          <a href="#hero" class="hover:text-[#D7E2EA] transition-colors">Back to top</a>
+          <a href="#about" class="hover:text-[#D7E2EA] transition-colors">About</a>
+          <a href="#services" class="hover:text-[#D7E2EA] transition-colors">Services</a>
+          <a href="#projects" class="hover:text-[#D7E2EA] transition-colors">Projects</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script>
+      // 1. Marquee Images Data
+      const marqueeImages = [
+        'https://motionsites.ai/assets/hero-space-voyage-preview-eECLH3Yc.gif',
+        'https://motionsites.ai/assets/hero-codenest-preview-Cgppc2qV.gif',
+        'https://motionsites.ai/assets/hero-vex-ventures-preview-BczMFIiw.gif',
+        'https://motionsites.ai/assets/hero-stellar-ai-v2-preview-DjvxjG3C.gif',
+        'https://motionsites.ai/assets/hero-asme-preview-B_nGDnTP.gif',
+        'https://motionsites.ai/assets/hero-transform-data-preview-Cx5OU29N.gif',
+        'https://motionsites.ai/assets/hero-vitara-preview-Cjz2QYyU.gif',
+        'https://motionsites.ai/assets/hero-terra-preview-BFjrCr7T.gif',
+        'https://motionsites.ai/assets/hero-skyelite-preview-DHaZIgUv.gif',
+        'https://motionsites.ai/assets/hero-aethera-preview-DknSlcTa.gif',
+        'https://motionsites.ai/assets/hero-designpro-preview-D8c5_een.gif',
+        'https://motionsites.ai/assets/hero-stellar-ai-preview-D3HL6bw1.gif',
+        'https://motionsites.ai/assets/hero-xportfolio-preview-D4A8maiC.gif',
+        'https://motionsites.ai/assets/hero-orbit-web3-preview-BXt4OttD.gif',
+        'https://motionsites.ai/assets/hero-nexora-preview-cx5HmUgo.gif',
+        'https://motionsites.ai/assets/hero-evr-ventures-preview-DZxeVFEX.gif',
+        'https://motionsites.ai/assets/hero-planet-orbit-preview-DWAP8Z1P.gif',
+        'https://motionsites.ai/assets/hero-new-era-preview-CocuDUm9.gif',
+        'https://motionsites.ai/assets/hero-wealth-preview-B70idl_u.gif',
+        'https://motionsites.ai/assets/hero-luminex-preview-CxOP7ce6.gif',
+        'https://motionsites.ai/assets/hero-celestia-preview-0yO3jXO8.gif',
+      ];
+
+      // Tripled for seamless scrolling
+      const row1Data = [
+        ...marqueeImages.slice(0, 11),
+        ...marqueeImages.slice(0, 11),
+        ...marqueeImages.slice(0, 11),
+      ];
+
+      const row2Data = [
+        ...marqueeImages.slice(11, 21),
+        ...marqueeImages.slice(11, 21),
+        ...marqueeImages.slice(11, 21),
+      ];
+
+      const row1Container = document.getElementById('marquee-row-1');
+      const row2Container = document.getElementById('marquee-row-2');
+
+      function populateRow(container, list, startIdx) {
+        container.innerHTML = list.map((src, i) => `
+          <div class="w-[420px] min-w-[420px] h-[270px] rounded-2xl overflow-hidden bg-[#161616] flex-shrink-0">
+            <img src="${src}" alt="Showcase 3D Preview ${startIdx + i}" loading="lazy" class="w-full h-full object-cover select-none" />
+          </div>
+        `).join('');
+      }
+
+      populateRow(row1Container, row1Data, 1);
+      populateRow(row2Container, row2Data, 12);
+
+      // Marquee Scroll Movement
+      const marqueeSection = document.getElementById('marquee');
+      function updateMarquee() {
+        if (!marqueeSection) return;
+        const rect = marqueeSection.getBoundingClientRect();
+        const sectionTop = rect.top + window.scrollY;
+        const offset = (window.scrollY - sectionTop + window.innerHeight) * 0.3;
+        
+        row1Container.style.transform = `translateX(${offset - 200}px)`;
+        row2Container.style.transform = `translateX(${-(offset - 200)}px)`;
+      }
+
+      // 2. Magnet Effect for Hero Portrait
+      const magnetEl = document.getElementById('hero-magnet');
+      const magnetPadding = 150;
+      const magnetStrength = 3;
+      let magnetActive = false;
+
+      window.addEventListener('mousemove', (e) => {
+        if (!magnetEl) return;
+        const rect = magnetEl.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const isWithin =
+          e.clientX >= rect.left - magnetPadding &&
+          e.clientX <= rect.right + magnetPadding &&
+          e.clientY >= rect.top - magnetPadding &&
+          e.clientY <= rect.bottom + magnetPadding;
+
+        if (isWithin) {
+          const deltaX = (e.clientX - centerX) / magnetStrength;
+          const deltaY = (e.clientY - centerY) / magnetStrength;
+          magnetEl.style.transition = 'transform 0.3s ease-out';
+          magnetEl.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0px)`;
+          magnetActive = true;
+        } else if (magnetActive) {
+          magnetEl.style.transition = 'transform 0.6s ease-in-out';
+          magnetEl.style.transform = 'translate3d(0px, 0px, 0px)';
+          magnetActive = false;
+        }
+      }, { passive: true });
+
+      // 3. Animated About Text (Character-by-character scroll opacity reveal)
+      const aboutText = "With more than five years of experience in design, i focus on branding, web design, and user experience, i truly enjoy working with businesses that aim to stand out and present their best image. Let's build something incredible together!";
+      const aboutContainer = document.getElementById('animated-about-text');
+
+      // Build character elements
+      const words = aboutText.split(' ');
+      let charElements = [];
+
+      aboutContainer.innerHTML = words.map((word, wordIndex) => {
+        const letters = word.split('').map(char => {
+          return `<span class="char-span relative inline-block">
+            <span class="opacity-0 select-none">${char}</span>
+            <span class="char-animated absolute left-0 top-0 select-text" style="opacity: 0.2; transition: opacity 0.1s linear;">${char}</span>
+          </span>`;
+        }).join('');
+
+        const trailingSpace = wordIndex < words.length - 1 ? `
+          <span class="char-span relative inline-block">
+            <span class="opacity-0 select-none">&nbsp;</span>
+            <span class="char-animated absolute left-0 top-0 select-none" style="opacity: 0.2; transition: opacity 0.1s linear;">&nbsp;</span>
+          </span>` : '';
+
+        return `<span class="inline-block whitespace-nowrap">${letters}${trailingSpace}</span>`;
+      }).join(' ');
+
+      charElements = Array.from(aboutContainer.querySelectorAll('.char-animated'));
+
+      function updateAboutTextScroll() {
+        if (!aboutContainer || charElements.length === 0) return;
+        const rect = aboutContainer.getBoundingClientRect();
+        const vh = window.innerHeight;
+        
+        // Offset ['start 0.8', 'end 0.2']
+        const startThreshold = vh * 0.8;
+        const endThreshold = vh * 0.2;
+        
+        const currentPos = rect.top;
+        const progress = Math.min(Math.max((startThreshold - currentPos) / (startThreshold - endThreshold), 0), 1);
+
+        const total = charElements.length;
+        charElements.forEach((el, index) => {
+          const charStart = index / total;
+          const charEnd = Math.min(1, (index + 2) / total);
+          
+          let charProgress = 0;
+          if (progress >= charEnd) {
+            charProgress = 1;
+          } else if (progress <= charStart) {
+            charProgress = 0;
+          } else {
+            charProgress = (progress - charStart) / (charEnd - charStart);
+          }
+          
+          const opacity = 0.2 + 0.8 * charProgress;
+          el.style.opacity = opacity.toFixed(2);
+        });
+      }
+
+      // 4. Sticky Stacking Cards on Scroll
+      const projectContainers = document.querySelectorAll('.project-container');
+      function updateProjectCards() {
+        projectContainers.forEach((container) => {
+          const card = container.querySelector('.project-card');
+          const targetScale = parseFloat(container.dataset.targetScale) || 1.0;
+          const rect = container.getBoundingClientRect();
+          
+          // Container scroll progress from when top hits sticky point to when container ends
+          const containerHeight = container.offsetHeight;
+          const scrolledPast = -rect.top;
+          const progress = Math.min(Math.max(scrolledPast / (containerHeight * 0.7), 0), 1);
+          
+          const currentScale = 1 - (1 - targetScale) * progress;
+          card.style.transform = `scale(${currentScale.toFixed(4)})`;
+        });
+      }
+
+      // Combined optimized scroll listener
+      let ticking = false;
+      function onScroll() {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            updateMarquee();
+            updateAboutTextScroll();
+            updateProjectCards();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      
+      // Initial render triggers
+      updateMarquee();
+      updateAboutTextScroll();
+      updateProjectCards();
+
+      // 5. Fade In Observer
+      const fadeElements = document.querySelectorAll('.fade-in-element');
+      const observerOptions = {
+        root: null,
+        rootMargin: '50px',
+        threshold: 0
+      };
+
+      const fadeObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      fadeElements.forEach(el => fadeObserver.observe(el));
+
+      // Dynamic year
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
