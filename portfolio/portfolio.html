@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KINETIC VOID // Spatial & 3D Generative Portfolio</title>
+  
+  <!-- Preconnect & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Three.js CDN for standalone execution directly via file:// -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --cyan: #00f0ff;
+      --violet: #c084fc;
+      --pink: #ff007f;
+      --bg-dark: #000000;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: #000000;
+      color: #ffffff;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: #000000;
+      color: #ffffff;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Custom Cyber Scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #020205;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1a2333;
+      border-radius: 9999px;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00f0ff;
+      box-shadow: 0 0 10px #00f0ff;
+    }
+
+    .font-mono {
+      font-family: var(--font-mono);
+    }
+
+    /* Fixed Canvases */
+    #webgl-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #sparkle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 40;
+      pointer-events: none;
+    }
+
+    /* UI Overlay Containers */
+    .app-container {
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Cyber Card */
+    .cyber-card {
+      position: relative;
+      background: rgba(8, 10, 16, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .cyber-card:hover {
+      border-color: rgba(0, 240, 255, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px -10px rgba(0, 240, 255, 0.18);
+    }
+
+    /* Corner Bracket Accents */
+    .corner-bracket {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-color: rgba(0, 240, 255, 0.7);
+    }
+    .corner-tl { top: -1px; left: -1px; border-top: 1.5px solid; border-left: 1.5px solid; }
+    .corner-tr { top: -1px; right: -1px; border-top: 1.5px solid; border-right: 1.5px solid; }
+    .corner-bl { bottom: -1px; left: -1px; border-bottom: 1.5px solid; border-left: 1.5px solid; }
+    .corner-br { bottom: -1px; right: -1px; border-bottom: 1.5px solid; border-right: 1.5px solid; }
+
+    /* Sticky HUD Header */
+    header.hud-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+
+    .hud-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #ffffff;
+    }
+
+    .hud-logo-icon {
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      background: rgba(0, 240, 255, 0.08);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cyan);
+      font-size: 14px;
+      position: relative;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-link {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #a3a3a3;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--cyan);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .model-pills {
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 9999px;
+      padding: 2px;
+    }
+
+    .model-pill-btn {
+      background: transparent;
+      border: none;
+      color: #888;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .model-pill-btn.active {
+      background: rgba(0, 240, 255, 0.2);
+      color: #a5f3fc;
+      border: 1px solid rgba(0, 240, 255, 0.6);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+    }
+
+    .audio-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #aaa;
+      transition: all 0.3s;
+    }
+
+    .audio-btn.active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: rgba(0, 240, 255, 0.6);
+      color: var(--cyan);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+    }
+
+    .equalizer-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 10px;
+    }
+    .eq-bar {
+      width: 2px;
+      background: var(--cyan);
+      border-radius: 1px;
+    }
+    .audio-btn.active .eq-bar:nth-child(1) { animation: eqPulse 0.8s ease-in-out infinite; }
+    .audio-btn.active .eq-bar:nth-child(2) { animation: eqPulse 0.5s ease-in-out infinite; }
+    .audio-btn.active .eq-bar:nth-child(3) { animation: eqPulse 1.1s ease-in-out infinite; }
+
+    @keyframes eqPulse {
+      0%, 100% { height: 3px; }
+      50% { height: 10px; }
+    }
+
+    /* Layout Sections */
+    section {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 100px 24px;
+      position: relative;
+    }
+
+    /* Hero Section */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 120px;
+      padding-bottom: 60px;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      background: rgba(0, 240, 255, 0.06);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #67e8f9;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      font-weight: 800;
+      line-height: 0.95;
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+    }
+
+    .hero-title span {
+      color: transparent;
+      background-clip: text;
+      -webkit-background-clip: text;
+      background-image: linear-gradient(90deg, #ffffff, #a5f3fc, #00f0ff);
+    }
+
+    .hero-desc {
+      font-size: 1.125rem;
+      color: #a3a3a3;
+      max-width: 600px;
+      font-weight: 300;
+      margin-bottom: 36px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    @media (min-width: 992px) {
+      .hero-grid {
+        grid-template-columns: 7fr 5fr;
+        align-items: end;
+      }
+    }
+
+    .telemetry-card {
+      padding: 24px;
+    }
+
+    .telemetry-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 6px 0;
+    }
+    .telemetry-label { color: #666; }
+    .telemetry-val { color: #fff; font-weight: 600; }
+    .telemetry-val.cyan { color: var(--cyan); }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 9999px;
+      background: #ffffff;
+      color: #000000;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: var(--cyan);
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.04);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0, 240, 255, 0.08);
+    }
+
+    /* Section Headings */
+    .section-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .section-desc {
+      color: #888;
+      max-width: 600px;
+      font-size: 0.95rem;
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+
+    /* Filter Tabs */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #888;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+    }
+
+    /* Projects Grid */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .project-card {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .project-card-top {
+      margin-bottom: 24px;
+    }
+
+    .project-meta {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      margin-bottom: 12px;
+    }
+
+    .project-num { color: var(--cyan); font-weight: 700; }
+    .project-category {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #bbb;
+    }
+
+    .project-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      transition: color 0.2s;
+    }
+    .project-card:hover .project-title {
+      color: var(--cyan);
+    }
+
+    .project-sub {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #00f0ffaa;
+      margin-bottom: 12px;
+    }
+
+    .project-desc {
+      font-size: 13px;
+      color: #888;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .metrics-mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      padding: 10px;
+      font-family: var(--font-mono);
+      margin-bottom: 16px;
+    }
+    .m-label { font-size: 9px; color: #666; display: block; }
+    .m-val { font-size: 12px; color: #a5f3fc; font-weight: 600; }
+
+    .tech-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .tech-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: #777;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .preview-3d-btn {
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .preview-3d-btn:hover { color: var(--cyan); }
+
+    /* Capabilities Section */
+    .capabilities-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    @media (min-width: 992px) {
+      .capabilities-grid {
+        grid-template-columns: 4fr 8fr;
+      }
+    }
+
+    .cap-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .cap-tab-btn {
+      text-align: left;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      cursor: pointer;
+      color: #fff;
+      transition: all 0.3s;
+    }
+    .cap-tab-btn.active {
+      border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.08);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.12);
+    }
+    .cap-tab-cat { font-family: var(--font-mono); font-size: 10px; color: var(--cyan); margin-bottom: 4px; }
+    .cap-tab-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .cap-tab-desc { font-size: 12px; color: #777; font-weight: 300; }
+
+    .skills-display {
+      padding: 28px;
+    }
+    .skill-item {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+    .skill-meta {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .progress-bar-bg {
+      height: 5px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00f0ff, #38bdf8, #c084fc);
+      border-radius: 999px;
+      transition: width 0.8s ease;
+    }
+
+    /* Trajectory Timeline */
+    .timeline {
+      position: relative;
+      border-left: 1px solid rgba(255, 255, 255, 0.12);
+      margin-left: 16px;
+      padding-left: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .timeline-node {
+      position: relative;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -37px;
+      top: 24px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #000;
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    /* Manifesto */
+    .manifesto-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    /* Transmit Section */
+    .transmit-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    @media (min-width: 992px) {
+      .transmit-grid {
+        grid-template-columns: 7fr 5fr;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      letter-spacing: 0.08em;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+    .form-select option {
+      background: #111;
+      color: #fff;
+    }
+
+    /* Modal Backdrop */
+    #project-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    #project-modal.active {
+      display: flex;
+    }
+
+    .modal-dialog {
+      width: 100%;
+      max-width: 820px;
+      max-height: 88vh;
+      overflow-y: auto;
+      background: #090b10;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 0 60px rgba(0, 240, 255, 0.18);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 32px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #666;
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WebGL 3D Background Canvas -->
+  <div id="webgl-canvas"></div>
+
+  <!-- Sparkle Mouse Cursor Canvas -->
+  <canvas id="sparkle-canvas"></canvas>
+
+  <!-- Sticky HUD Navigation Header -->
+  <header class="hud-header">
+    <a href="#hero" class="hud-brand">
+      <div class="hud-logo-icon">
+        <span>✦</span>
+        <span class="corner-bracket corner-tl"></span>
+        <span class="corner-bracket corner-br"></span>
+      </div>
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; letter-spacing: 0.1em;">
+          KINETIC<span style="color: var(--cyan);">VOID</span>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 9px; color: #00f0ffaa; display: flex; align-items: center; gap: 4px;">
+          <span style="width: 5px; height: 5px; background: #34d399; border-radius: 50%; display: inline-block;"></span>
+          ONLINE // SYS.v4.0
+        </div>
+      </div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="#hero" class="nav-link">01 // OVERVIEW</a>
+      <a href="#projects" class="nav-link">02 // ARTIFACTS</a>
+      <a href="#capabilities" class="nav-link">03 // MATRIX</a>
+      <a href="#trajectory" class="nav-link">04 // TRAJECTORY</a>
+      <a href="#manifesto" class="nav-link">05 // MANIFESTO</a>
+      <a href="#transmit" class="nav-link">06 // TRANSMIT</a>
+    </nav>
+
+    <div class="hud-controls">
+      <!-- 3D Model Switcher Pills -->
+      <div class="model-pills">
+        <button class="model-pill-btn active" data-model="PORTAL">PORTAL</button>
+        <button class="model-pill-btn" data-model="MASK">CYBER MASK</button>
+        <button class="model-pill-btn" data-model="BRAIN">SYNAPSE</button>
+        <button class="model-pill-btn" data-model="HELIX">QUANTUM</button>
+      </div>
+
+      <!-- Audio Synthesizer Toggle -->
+      <button id="audio-toggle-btn" class="audio-btn">
+        <span id="audio-label">SOUND</span>
+        <div class="equalizer-bars">
+          <span class="eq-bar" style="height: 4px;"></span>
+          <span class="eq-bar" style="height: 8px;"></span>
+          <span class="eq-bar" style="height: 5px;"></span>
+        </div>
+      </button>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <!-- HERO SECTION -->
+    <section id="hero">
+      <div class="hero-tag">
+        <span class="pulse-dot"></span>
+        <span>COSMIC VOID STAGE // 60 FPS NOMINAL</span>
+      </div>
+
+      <div class="hero-grid">
+        <div>
+          <p style="font-family: var(--font-mono); font-size: 12px; color: var(--cyan); letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 12px;">
+            REAL-TIME WEBGL & GENERATIVE SYSTEMS
+          </p>
+          <h1 class="hero-title">
+            KINETIC <br />
+            <span>DIMENSIONS</span>
+          </h1>
+          <p class="hero-desc">
+            Architecting bleeding-edge 3D generative simulations, procedural starlight sparkles, and whispered ghost interfaces that dissolve the frontier between technology and art.
+          </p>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px;">
+            <a href="#projects" class="btn-primary">
+              <span>EXPLORE ARTIFACTS</span>
+              <span>↘</span>
+            </a>
+            <a href="#transmit" class="btn-secondary">
+              <span>INITIATE TRANSMISSION</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Real-time Telemetry Glass HUD Card -->
+        <div>
+          <div class="cyber-card telemetry-card">
+            <span class="corner-bracket corner-tl"></span>
+            <span class="corner-bracket corner-tr"></span>
+            <span class="corner-bracket corner-bl"></span>
+            <span class="corner-bracket corner-br"></span>
+
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 14px;">
+              <span style="font-family: var(--font-mono); font-size: 11px; color: #aaa;">CORE TELEMETRY</span>
+              <span id="utc-clock" style="font-family: var(--font-mono); font-size: 10px; color: #555;">00:00:00 UTC</span>
+            </div>
+
+            <div class="telemetry-row">
+              <span class="telemetry-label">ACTIVE HOLOGRAM:</span>
+              <span id="hud-model-val" class="telemetry-val cyan">PORTAL</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">PARTICLE CLOUD:</span>
+              <span id="hud-particles-val" class="telemetry-val">15,800 PTS</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">FRAME STABILITY:</span>
+              <span id="hud-fps-val" class="telemetry-val" style="color: #34d399;">60 FPS</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">RAYCAST VECTOR:</span>
+              <span id="hud-raycast-val" class="telemetry-val" style="font-size: 11px; color: #888;">[0.00, 0.00, 0.0]</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">POST-PROCESSING:</span>
+              <span class="telemetry-val" style="color: var(--violet);">UNREAL BLOOM</span>
+            </div>
+
+            <button id="cycle-model-btn" class="btn-secondary" style="width: 100%; justify-content: center; margin-top: 18px; font-size: 11px;">
+              <span>TRANSFORM 3D CORE</span>
+              <span>↻</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS SECTION -->
+    <section id="projects">
+      <div class="section-tag">
+        <span>✦</span>
+        <span>SECTION 02 // ARTIFACT ARCHIVE</span>
+      </div>
+      <h2 class="section-title">SELECTED WORKS</h2>
+      <p class="section-desc">
+        Autonomous spatial environments, GPU vector fields, and high-precision telemetry interfaces engineered for deep space computing.
+      </p>
+
+      <!-- Category Filter Tabs -->
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="ALL">ALL</button>
+        <button class="filter-btn" data-filter="WEBGL & 3D">WEBGL & 3D</button>
+        <button class="filter-btn" data-filter="SPATIAL AUDIO">SPATIAL AUDIO</button>
+        <button class="filter-btn" data-filter="GENERATIVE AI">GENERATIVE AI</button>
+        <button class="filter-btn" data-filter="SYSTEMS">SYSTEMS</button>
+      </div>
+
+      <!-- Projects Grid Container -->
+      <div id="projects-container" class="projects-grid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- CAPABILITIES MATRIX -->
+    <section id="capabilities">
+      <div class="section-tag">
+        <span>✦</span>
+        <span>SECTION 03 // SYSTEM CAPABILITIES</span>
+      </div>
+      <h2 class="section-title">TECHNICAL MATRIX</h2>
+      <p class="section-desc">
+        Multi-disciplinary mastery spanning GPU compute pipelines, real-time spatial audio synthesis, and minimalist cosmic void architectural UI.
+      </p>
+
+      <div class="capabilities-grid">
+        <!-- Tabs -->
+        <div id="cap-tabs-container" class="cap-tabs">
+          <!-- Rendered via JS -->
+        </div>
+
+        <!-- Skills Display -->
+        <div class="cyber-card skills-display">
+          <span class="corner-bracket corner-tl"></span>
+          <span class="corner-bracket corner-tr"></span>
+          <span class="corner-bracket corner-bl"></span>
+          <span class="corner-bracket corner-br"></span>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 20px;">
+            <div>
+              <span id="cluster-num" style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan);">PROTOCOL CLUSTER: 01</span>
+              <h3 id="cluster-title" style="font-size: 1.25rem; font-weight: 700; text-transform: uppercase; margin-top: 4px;">CORE SPATIAL & 3D GRAPHICS</h3>
+            </div>
+            <span style="font-family: var(--font-mono); font-size: 11px; color: #67e8f9; padding: 4px 10px; border-radius: 9999px; background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.3);">
+              HIGH PROFICIENCY
+            </span>
+          </div>
+
+          <div id="skills-list">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRAJECTORY SECTION -->
+    <section id="trajectory">
+      <div class="section-tag">
+        <span>✦</span>
+        <span>SECTION 04 // CHRONOLOGICAL TRAJECTORY</span>
+      </div>
+      <h2 class="section-title">CAREER VECTORS</h2>
+      <p class="section-desc">
+        Historical milestones spearheading spatial architectures, GPU visual engines, and digital brand monuments.
+      </p>
+
+      <div class="timeline" id="timeline-container">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- MANIFESTO SECTION -->
+    <section id="manifesto">
+      <div class="section-tag">
+        <span>✦</span>
+        <span>SECTION 05 // PHILOSOPHY & MANIFESTO</span>
+      </div>
+      <h2 class="section-title">THE VOID DOCTRINE</h2>
+      <p class="section-desc">
+        &ldquo;Chrome whispers while the rendered universe shouts.&rdquo; Foundational axioms governing deep space interfaces and sensory spatial experiences.
+      </p>
+
+      <div class="manifesto-grid" id="manifesto-container">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- TRANSMIT CONTACT SECTION -->
+    <section id="transmit">
+      <div class="section-tag">
+        <span>✦</span>
+        <span>SECTION 06 // TRANSMISSION TERMINAL</span>
+      </div>
+      <h2 class="section-title">INITIATE CONTACT</h2>
+      <p class="section-desc">
+        Ready to pioneer an unrepeatable WebGL universe or commission a high-performance spatial simulation? Broadcast your transmission across our quantum frequency.
+      </p>
+
+      <div class="transmit-grid">
+        <!-- Form -->
+        <div class="cyber-card" style="padding: 32px;">
+          <span class="corner-bracket corner-tl"></span>
+          <span class="corner-bracket corner-tr"></span>
+          <span class="corner-bracket corner-bl"></span>
+          <span class="corner-bracket corner-br"></span>
+
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 24px; font-family: var(--font-mono); font-size: 11px;">
+            <span>SECURE BEACON UPLINK // TLS 1.3</span>
+            <span style="color: #34d399;">READY</span>
+          </div>
+
+          <form id="transmit-form">
+            <div class="form-group">
+              <label class="form-label">01 // CALLSIGN OR ENTITY NAME</label>
+              <input type="text" id="form-name" required placeholder="e.g. Commander Shepard / Monolith Corp" class="form-input" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">02 // RETURN COORDINATE (EMAIL / SIGNAL)</label>
+              <input type="email" id="form-email" required placeholder="name@domain.cosmos" class="form-input" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">03 // TRANSMISSION FREQUENCY PROTOCOL</label>
+              <select id="form-channel" class="form-select">
+                <option value="QUANTUM ENCRYPTED">CHANNEL 01 // QUANTUM ENCRYPTED (RECOMMENDED)</option>
+                <option value="COMMISSION BRIEF">CHANNEL 02 // BESPOKE 3D / SPATIAL CONTRACT</option>
+                <option value="RESEARCH ALLIANCE">CHANNEL 03 // GENERATIVE ART & RESEARCH ALLIANCE</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">04 // TRANSMISSION PAYLOAD (BRIEF)</label>
+              <textarea id="form-msg" rows="4" required placeholder="Outline your project scope, spatial requirements, performance targets..." class="form-textarea" style="resize: none;"></textarea>
+            </div>
+
+            <button type="submit" id="transmit-submit-btn" class="btn-primary" style="width: 100%; justify-content: center; padding: 14px; background: var(--cyan); color: #000; font-weight: 800;">
+              BROADCAST TO ORBITAL BEACON
+            </button>
+          </form>
+
+          <div id="transmit-success" style="display: none; text-align: center; padding: 36px 0;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--cyan); background: rgba(0,240,255,0.1); color: var(--cyan); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 20px;">
+              ✓
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">TRANSMISSION BROADCASTED</h3>
+            <p style="font-family: var(--font-mono); font-size: 12px; color: #888; max-width: 360px; margin: 0 auto 20px;">
+              Packet ingested into deep space buffer. An encrypted response will be dispatched within 24 hours.
+            </p>
+            <button id="reset-form-btn" class="btn-secondary" style="font-size: 11px;">SEND ANOTHER PACKET</button>
+          </div>
+        </div>
+
+        <!-- Coordinates Card -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div class="cyber-card" style="padding: 24px;">
+            <span class="corner-bracket corner-tl"></span>
+            <span class="corner-bracket corner-tr"></span>
+            <span class="corner-bracket corner-bl"></span>
+            <span class="corner-bracket corner-br"></span>
+
+            <h3 style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; color: #888; text-transform: uppercase; margin-bottom: 16px;">
+              TRANSMISSION COORDINATES
+            </h3>
+
+            <div style="font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; gap: 12px;">
+              <div>
+                <span style="color: #666; display: block; font-size: 10px;">PRIMARY NODE:</span>
+                <span style="color: #fff;">contact@kineticvoid.io</span>
+              </div>
+              <div>
+                <span style="color: #666; display: block; font-size: 10px;">PGP FINGERPRINT:</span>
+                <span style="color: var(--cyan); font-size: 11px; word-break: break-all;">4A7F 921B E083 CD45 1982 7701 FB5C A934</span>
+              </div>
+              <div>
+                <span style="color: #666; display: block; font-size: 10px;">STATUS:</span>
+                <span style="color: #34d399; display: flex; align-items: center; gap: 6px;">
+                  <span style="width: 6px; height: 6px; background: #34d399; border-radius: 50%;"></span>
+                  ACCEPTING NEW COMMISSIONS
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Social Matrix -->
+          <div class="cyber-card" style="padding: 24px;">
+            <span class="corner-bracket corner-tl"></span>
+            <span class="corner-bracket corner-tr"></span>
+            <span class="corner-bracket corner-bl"></span>
+            <span class="corner-bracket corner-br"></span>
+
+            <h3 style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; color: #888; text-transform: uppercase; margin-bottom: 16px;">
+              COMMUNICATIONS ARRAY
+            </h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <a href="https://github.com" target="_blank" class="btn-secondary" style="font-size: 11px; justify-content: center;">GITHUB</a>
+              <a href="https://x.com" target="_blank" class="btn-secondary" style="font-size: 11px; justify-content: center;">TWITTER</a>
+              <a href="https://linkedin.com" target="_blank" class="btn-secondary" style="font-size: 11px; justify-content: center;">LINKEDIN</a>
+              <a href="https://discord.com" target="_blank" class="btn-secondary" style="font-size: 11px; justify-content: center;">DISCORD</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Project Deep Dive Modal -->
+  <div id="project-modal">
+    <div class="modal-dialog">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; margin-bottom: 20px;">
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); margin-bottom: 4px;" id="m-number">ARTIFACT #01</div>
+          <h2 id="m-title" style="font-size: 1.75rem; font-weight: 800; text-transform: uppercase;">PROJECT TITLE</h2>
+          <div id="m-sub" style="font-family: var(--font-mono); font-size: 12px; color: #a5f3fc;">SUBTITLE</div>
+        </div>
+        <button id="modal-close-btn" style="background: none; border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">✕</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px;" id="m-metrics">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-family: var(--font-mono); font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 6px;">SYSTEM OVERVIEW</h4>
+        <p id="m-desc" style="color: #ccc; font-size: 14px; line-height: 1.6; font-weight: 300;"></p>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-family: var(--font-mono); font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 6px;">ARCHITECTURAL NARRATIVE</h4>
+        <p id="m-narrative" style="color: #999; font-size: 13px; line-height: 1.6;"></p>
+      </div>
+
+      <div style="background: rgba(0,240,255,0.08); border: 1px solid rgba(0,240,255,0.25); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; margin-bottom: 24px;">
+        <div style="color: var(--cyan); font-weight: 700; margin-bottom: 4px;">✦ CORE ARCHITECTURAL INNOVATION</div>
+        <div id="m-highlight" style="color: #e0f2fe;">Highlight feature</div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+        <button id="modal-sync-3d-btn" class="btn-secondary" style="font-size: 11px;">
+          <span>SYNC 3D HOLOGRAM</span>
+        </button>
+        <button id="modal-dismiss-btn" class="btn-primary" style="font-size: 11px; padding: 8px 20px;">
+          DISMISS
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Footer -->
+  <footer>
+    <div>© 2026 KINETIC VOID LABS // COSMIC VOID SYSTEM v4.0</div>
+    <div>DESIGN SYSTEM: ACTIVE THEORY HYBRID // RUNNING FROM DESKTOP</div>
+  </footer>
+
+  <!-- WebGL, Audio & Interactivity Scripts -->
+  <script>
+    // --- 1. PORTFOLIO DATA ---
+    const PROJECTS = [
+      {
+        id: 'dreamwave',
+        number: '01',
+        title: 'DREAMWAVE HORIZON',
+        subtitle: 'Gravitational Audio-Reactive WebGL Cosmos',
+        category: 'SPATIAL AUDIO',
+        year: '2026',
+        client: 'Active Theory Labs',
+        description: 'A nocturnal sensory expedition exploring acoustic tension across deep void space. Physical boundaries dissolve into gravitational particle simulations and real-time volumetric light dispersion.',
+        fullNarrative: 'Engineered as an autonomous digital biosphere, Dreamwave Horizon balances mathematical precision with organic particle turbulence. Visitors navigate a cosmic vacuum where acoustic nodes deform 120,000 GPU-instanced points in real time.',
+        technologies: ['Three.js', 'Custom GLSL', 'Web Audio Synth', 'WebGL 2.0'],
+        metrics: [
+          { label: 'Particles', value: '140,000+' },
+          { label: 'Stability', value: '60 FPS @ 4K' },
+          { label: 'Latency', value: '12.4 ms' },
+          { label: 'Channels', value: '32 Ch Spatial' }
+        ],
+        highlightFeature: 'Real-time 3D FFT audio spectrum particle deformation vector field',
+        hologramType: 'PORTAL'
+      },
+      {
+        id: 'cybervoxel',
+        number: '02',
+        title: 'CYBERVOXEL KINETICS',
+        subtitle: 'Deep Space Telemetry & Orbital Command Interface',
+        category: 'SYSTEMS',
+        year: '2025',
+        client: 'Monolith Spatial Systems',
+        description: 'Next-generation mission command deck for planetary satellite constellations. Whispered ghost interfaces render telemetry data alongside interactive 3D orbital trajectory meshes.',
+        fullNarrative: 'Cybervoxel Kinetics re-envisions mission operations by stripping visual chrome down to razor-thin hairline vectors and single-wavelength luminescence. High-concurrency streams feed real-time quaternion telemetry directly to instanced GPU meshes.',
+        technologies: ['WebGL Core', 'Quaternion Kinematics', 'Hardware Instancing', 'TypeScript'],
+        metrics: [
+          { label: 'Satellites', value: '4,820 Nodes' },
+          { label: 'UI Overhead', value: '< 1.4%' },
+          { label: 'Refresh', value: '120 Hz' },
+          { label: 'Telemetry', value: '2.4 Gb/s' }
+        ],
+        highlightFeature: 'Sub-millisecond quaternion orbital projection engine',
+        hologramType: 'MASK'
+      },
+      {
+        id: 'nebula-fluidum',
+        number: '03',
+        title: 'NEBULA FLUIDUM',
+        subtitle: 'Generative GPU Particle Fluid & Cosmic Singularity',
+        category: 'GENERATIVE AI',
+        year: '2025',
+        client: 'Solstice Sound Lab',
+        description: 'Generative digital artifact pulsing in resonance with cosmic electromagnetic fields. Micro-particles cascade in gravitational fountain arcs, folding into self-stabilizing vortex singularities.',
+        fullNarrative: 'Commissioned as an algorithmic identity system, Nebula Fluidum captures atmospheric entropy and translates it into celestial currents. The central gravitational portal acts as an optical lens, drawing starlight diamond sparkles into an event horizon.',
+        technologies: ['Compute Shaders', 'Curl Noise Vector Fields', 'Physically Based Bloom'],
+        metrics: [
+          { label: 'Dimensions', value: '4D Vector' },
+          { label: 'Passes', value: '7 Multi-pass' },
+          { label: 'Lifetime', value: 'Dynamic' },
+          { label: 'Sparkle Density', value: '98.6%' }
+        ],
+        highlightFeature: '4D curl-noise Eulerian particle vector flow',
+        hologramType: 'PORTAL'
+      },
+      {
+        id: 'synapse-aeon',
+        number: '04',
+        title: 'SYNAPSE AEON',
+        subtitle: 'Bio-Digital Neural Network & Holographic Consciousness',
+        category: 'WEBGL & 3D',
+        year: '2025',
+        client: 'NeuroSpatial Consortium',
+        description: 'Interactive 3D simulation of human neural architecture. Over 20,000 cortex particles and firing axon lines pulse with electrical impulses responding to user interaction.',
+        fullNarrative: 'Synapse Aeon visualizes cognitive data pathways through an intricate 3D cerebral particle lattice. By combining Signed Distance Field (SDF) mathematics with dynamic spring physics, users can trigger neural firing events that ripple across cortex folds.',
+        technologies: ['Three.js', 'Simplex Noise 3D', 'SDF Raymarching', 'BufferGeometry'],
+        metrics: [
+          { label: 'Nodes', value: '21,000 Pts' },
+          { label: 'Synapses', value: '1,450 Axons' },
+          { label: 'Impulse Speed', value: '120 m/s' },
+          { label: 'Latency', value: '8.2 ms' }
+        ],
+        highlightFeature: 'Real-time electrical impulse propagation along dynamic axon segments',
+        hologramType: 'BRAIN'
+      },
+      {
+        id: 'aether-resonance',
+        number: '05',
+        title: 'AETHER RESONANCE',
+        subtitle: 'Minimalist Spatial Audio Sculpture & Acoustic Void',
+        category: 'SPATIAL AUDIO',
+        year: '2024',
+        client: 'Chamber Acoustics Institute',
+        description: 'An architectural monument to quietude. Designed for acoustic meditation, viewers modulate harmonic resonances by traversing geometric planes suspended in vacuum.',
+        fullNarrative: 'Rejecting modern sensory bombardment, Aether Resonance proves that silence and calibrated negative space possess supreme aesthetic power. Thin wireframe contours pulse softly when harmonic frequencies align.',
+        technologies: ['Web Audio Engine', 'Three.js', 'Binaural Spatializer'],
+        metrics: [
+          { label: 'Harmonic Range', value: '18Hz – 22kHz' },
+          { label: 'Spatial Depth', value: 'Infinite' },
+          { label: 'Saturation', value: 'Zero Base' },
+          { label: 'Stability', value: '99.98%' }
+        ],
+        highlightFeature: 'Binaural 3D acoustic field positioning',
+        hologramType: 'HELIX'
+      },
+      {
+        id: 'kronos-chronometry',
+        number: '06',
+        title: 'KRONOS CHRONOMETRY',
+        subtitle: '4D Relativistic Timepiece & Quantum Singularity',
+        category: 'WEBGL & 3D',
+        year: '2024',
+        client: 'Horology Vanguard',
+        description: 'A digital tesseract timepiece interpreting relativistic time dilation. Geometric concentric rings rotate across four spatial dimensions, projecting sparkling star horizons.',
+        fullNarrative: 'Kronos challenges conventional linear clock faces by visualizing temporal flow through higher-dimensional rotational kinematics. Each millisecond is mapped to orbital inclinations.',
+        technologies: ['Three.js', '4D Mathematics', 'PostProcessing Bloom'],
+        metrics: [
+          { label: 'Rotational Axes', value: '6 Planes (4D)' },
+          { label: 'Precision', value: '± 0.001 ms' },
+          { label: 'Facets', value: '256 Crystalline' },
+          { label: 'Frame Cost', value: '2.1 ms/frame' }
+        ],
+        highlightFeature: 'Stereographic projection of 4D hypercube rotations',
+        hologramType: 'PORTAL'
+      }
+    ];
+
+    const CAPABILITIES = [
+      {
+        domain: 'Core Spatial & 3D Graphics',
+        categoryNumber: '01',
+        description: 'Direct GPU orchestration, real-time rendering pipelines, and custom shader mathematics.',
+        skills: [
+          { name: 'Three.js & WebGL 2.0', level: 98, tag: 'Core' },
+          { name: 'Custom GLSL Shaders & Post-Processing', level: 94, tag: 'GPU' },
+          { name: 'UnrealBloomPass & Additive Lighting', level: 96, tag: 'Visuals' },
+          { name: 'GPU Particle Systems & Point Clouds', level: 95, tag: 'VFX' },
+          { name: 'Signed Distance Fields (SDF) & Simplex 3D', level: 92, tag: 'Math' }
+        ]
+      },
+      {
+        domain: 'Creative Engineering & Systems',
+        categoryNumber: '02',
+        description: 'Ultra-responsive frontend architectures, fluid physics, and zero-latency micro-interactions.',
+        skills: [
+          { name: 'React 19 & High-Perf DOM', level: 96, tag: 'Framework' },
+          { name: 'TypeScript & Type-Safe Graphics', level: 95, tag: 'Language' },
+          { name: 'Tailwind CSS v4 & Architectural CSS', level: 94, tag: 'Styling' },
+          { name: 'WebSocket & Real-time Telemetry Streams', level: 90, tag: 'Network' }
+        ]
+      },
+      {
+        domain: 'Generative Audio & Sound Synthesis',
+        categoryNumber: '03',
+        description: 'Procedural acoustic environments, frequency analysis, and tactile cybernetic audio feedback.',
+        skills: [
+          { name: 'Web Audio API Synth Architecture', level: 93, tag: 'Audio' },
+          { name: 'Real-time FFT Frequency Analysis', level: 91, tag: 'DSP' },
+          { name: 'Sub-Harmonic Drone & Overtone Synthesis', level: 94, tag: 'Generative' },
+          { name: 'Interactive UI Audio Hums & Feedback Chirps', level: 95, tag: 'UX Audio' }
+        ]
+      },
+      {
+        domain: 'Spatial Architecture & Design Strategy',
+        categoryNumber: '04',
+        description: 'Minimalist cosmic void design language, deep space telemetry chrome, and user immersion.',
+        skills: [
+          { name: 'Cosmic Void Design Systems', level: 97, tag: 'Aesthetic' },
+          { name: 'Whispered UI Chrome & Hairline Separators', level: 96, tag: 'UI/UX' },
+          { name: '60 FPS Profiling & Memory Leak Mitigation', level: 94, tag: 'Performance' }
+        ]
+      }
+    ];
+
+    const TRAJECTORY = [
+      {
+        period: '2025 — PRESENT',
+        role: 'Principal Spatial Systems Architect',
+        org: 'KINETIC VOID LABS',
+        summary: 'Directing the engineering of zero-latency WebGL micro-universes, generative particle systems, and cosmic void interfaces for bleeding-edge spatial computing clients.',
+        deliverables: [
+          'Engineered a 150K particle real-time WebGL engine maintaining 60 FPS across mobile and desktop devices.',
+          'Designed a unified Cosmic Void UI framework featuring whispers of chrome and high-contrast telemetry readouts.',
+          'Authored custom procedural sparkle algorithms utilizing canvas-generated diamond starlight textures.'
+        ]
+      },
+      {
+        period: '2023 — 2025',
+        role: 'Lead Creative Technologist',
+        org: 'Monolith Spatial Systems',
+        summary: 'Led the graphics engineering team for satellite telemetry command decks and generative brand artifacts for next-gen aerospace pioneers.',
+        deliverables: [
+          'Built interactive 3D orbital mesh projectors tracking 4,800+ real-time satellite trajectories.',
+          'Reduced WebGL GPU frame times by 42% through aggressive buffer pooling and vertex packing.'
+        ]
+      },
+      {
+        period: '2021 — 2023',
+        role: 'WebGL & Graphics Engineer',
+        org: 'Active Theory Collaborators',
+        summary: 'Designed and deployed award-winning immersive digital exhibitions, GLSL post-processing pipelines, and responsive WebGL landing pages.',
+        deliverables: [
+          'Developed UnrealBloomPass post-processing presets tuned for cosmic neon luminescence.',
+          'Awarded 5x FWA of the Day and 4x Awwwards Site of the Day for interactive excellence.'
+        ]
+      }
+    ];
+
+    const MANIFESTO = [
+      {
+        idx: '01',
+        title: 'THE ABSENCE OF SURFACE',
+        sub: 'Void Black as infinite canvas',
+        desc: 'True depth is not born from layers of heavy decoration, but from absolute void. By treating pure black (#000000) not as a color, but as a boundless cosmic stage, every rendered point of light gains celestial significance.'
+      },
+      {
+        idx: '02',
+        title: 'WHISPERED CHROME',
+        sub: 'Invisible interface architecture',
+        desc: 'The interface should never shout while the rendered universe speaks. Buttons, borders, and navigation recede into hairline translucency and subtle frosted glass, guiding without tethering the eye.'
+      },
+      {
+        idx: '03',
+        title: 'ORGANIC MATHEMATICAL CHAOS',
+        sub: 'Simplex noise meets precision geometry',
+        desc: 'Nature is neither purely rigid nor utterly chaotic. By interweaving strict Signed Distance Fields and golden-ratio spirals with multi-octave 3D noise, digital matter awakens with natural vitality.'
+      },
+      {
+        idx: '04',
+        title: 'ACOUSTIC SYNCHRONICITY',
+        sub: 'Sound as tactile spatial geometry',
+        desc: 'A visual world without sound is a hologram in a vacuum. Real-time procedural sub-harmonics and reactive feedback pulses root the viewer into the simulation, transforming looking into feeling.'
+      }
+    ];
+
+    // --- 2. FAST 3D SIMPLEX NOISE IMPLEMENTATION ---
+    const F3 = 1.0 / 3.0, G3 = 1.0 / 6.0;
+    const p = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) p[i] = Math.floor(Math.random() * 256);
+    const perm = new Uint8Array(512);
+    const permMod12 = new Uint8Array(512);
+    for (let i = 0; i < 512; i++) {
+      perm[i] = p[i & 255];
+      permMod12[i] = perm[i] % 12;
+    }
+    const grad3 = new Float32Array([
+      1,1,0, -1,1,0, 1,-1,0, -1,-1,0,
+      1,0,1, -1,0,1, 1,0,-1, -1,0,-1,
+      0,1,1, 0,-1,1, 0,1,-1, 0,-1,-1
+    ]);
+    function noise3D(xin, yin, zin) {
+      let n0, n1, n2, n3;
+      const s = (xin + yin + zin) * F3;
+      const i = Math.floor(xin + s), j = Math.floor(yin + s), k = Math.floor(zin + s);
+      const t = (i + j + k) * G3;
+      const X0 = i - t, Y0 = j - t, Z0 = k - t;
+      const x0 = xin - X0, y0 = yin - Y0, z0 = zin - Z0;
+      let i1, j1, k1, i2, j2, k2;
+      if (x0 >= y0) {
+        if (y0 >= z0) { i1=1; j1=0; k1=0; i2=1; j2=1; k2=0; }
+        else if (x0 >= z0) { i1=1; j1=0; k1=0; i2=1; j2=0; k2=1; }
+        else { i1=0; j1=0; k1=1; i2=1; j2=0; k2=1; }
+      } else {
+        if (y0 < z0) { i1=0; j1=0; k1=1; i2=0; j2=1; k2=1; }
+        else if (x0 < z0) { i1=0; j1=1; k1=0; i2=0; j2=1; k2=1; }
+        else { i1=0; j1=1; k1=0; i2=1; j2=1; k2=0; }
+      }
+      const x1 = x0 - i1 + G3, y1 = y0 - j1 + G3, z1 = z0 - k1 + G3;
+      const x2 = x0 - i2 + 2.0 * G3, y2 = y0 - j2 + 2.0 * G3, z2 = z0 - k2 + 2.0 * G3;
+      const x3 = x0 - 1.0 + 3.0 * G3, y3 = y0 - 1.0 + 3.0 * G3, z3 = z0 - 1.0 + 3.0 * G3;
+      const ii = i & 255, jj = j & 255, kk = k & 255;
+      let t0 = 0.6 - x0*x0 - y0*y0 - z0*z0;
+      if (t0 < 0) n0 = 0.0; else { t0 *= t0; const gi0 = permMod12[ii + perm[jj + perm[kk]]] * 3; n0 = t0 * t0 * (grad3[gi0]*x0 + grad3[gi0+1]*y0 + grad3[gi0+2]*z0); }
+      let t1 = 0.6 - x1*x1 - y1*y1 - z1*z1;
+      if (t1 < 0) n1 = 0.0; else { t1 *= t1; const gi1 = permMod12[ii + i1 + perm[jj + j1 + perm[kk + k1]]] * 3; n1 = t1 * t1 * (grad3[gi1]*x1 + grad3[gi1+1]*y1 + grad3[gi1+2]*z1); }
+      let t2 = 0.6 - x2*x2 - y2*y2 - z2*z2;
+      if (t2 < 0) n2 = 0.0; else { t2 *= t2; const gi2 = permMod12[ii + i2 + perm[jj + j2 + perm[kk + k2]]] * 3; n2 = t2 * t2 * (grad3[gi2]*x2 + grad3[gi2+1]*y2 + grad3[gi2+2]*z2); }
+      let t3 = 0.6 - x3*x3 - y3*y3 - z3*z3;
+      if (t3 < 0) n3 = 0.0; else { t3 *= t3; const gi3 = permMod12[ii + 1 + perm[jj + 1 + perm[kk + 1]]] * 3; n3 = t3 * t3 * (grad3[gi3]*x3 + grad3[gi3+1]*y3 + grad3[gi3+2]*z3); }
+      return 32.0 * (n0 + n1 + n2 + n3);
+    }
+
+    // --- 3. WEB AUDIO SYNTHESIZER ---
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.isPlaying = false;
+        this.masterGain = null;
+      }
+      init() {
+        if (this.ctx) return;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioContext();
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.setValueAtTime(0, this.ctx.currentTime);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(160, this.ctx.currentTime);
+        filter.Q.setValueAtTime(2.8, this.ctx.currentTime);
+
+        // Sub osc (55Hz)
+        const sub = this.ctx.createOscillator();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(55, this.ctx.currentTime);
+        const subGain = this.ctx.createGain();
+        subGain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        sub.connect(subGain);
+        subGain.connect(filter);
+
+        // Mid osc (110Hz + 3 cents)
+        const mid = this.ctx.createOscillator();
+        mid.type = 'sine';
+        mid.frequency.setValueAtTime(110, this.ctx.currentTime);
+        mid.detune.setValueAtTime(3.5, this.ctx.currentTime);
+        const midGain = this.ctx.createGain();
+        midGain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        mid.connect(midGain);
+        midGain.connect(filter);
+
+        // High overtone (164.81Hz)
+        const high = this.ctx.createOscillator();
+        high.type = 'triangle';
+        high.frequency.setValueAtTime(164.81, this.ctx.currentTime);
+        high.detune.setValueAtTime(-4, this.ctx.currentTime);
+        const highGain = this.ctx.createGain();
+        highGain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        high.connect(highGain);
+        highGain.connect(filter);
+
+        filter.connect(this.masterGain);
+        this.masterGain.connect(this.ctx.destination);
+
+        sub.start();
+        mid.start();
+        high.start();
+      }
+      toggle() {
+        this.init();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const now = this.ctx.currentTime;
+        if (!this.isPlaying) {
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+          this.masterGain.gain.linearRampToValueAtTime(0.16, now + 1.2);
+          this.isPlaying = true;
+        } else {
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+          this.masterGain.gain.linearRampToValueAtTime(0, now + 0.8);
+          this.isPlaying = false;
+        }
+        return this.isPlaying;
+      }
+      playClick() {
+        if (!this.isPlaying || !this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const now = this.ctx.currentTime;
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.exponentialRampToValueAtTime(1760, now + 0.05);
+          gain.gain.setValueAtTime(0.04, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } catch(e) {}
+      }
+      playHover() {
+        if (!this.isPlaying || !this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const now = this.ctx.currentTime;
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.linearRampToValueAtTime(330, now + 0.08);
+          gain.gain.setValueAtTime(0.02, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.09);
+        } catch(e) {}
+      }
+      playWarp() {
+        if (!this.isPlaying || !this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const now = this.ctx.currentTime;
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(960, now + 0.25);
+          gain.gain.setValueAtTime(0.06, now);
+          gain.gain.linearRampToValueAtTime(0.08, now + 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.32);
+        } catch(e) {}
+      }
+    }
+    const sound = new SoundEngine();
+
+    // --- 4. PROCEDURAL CANVAS SPARKLE TEXTURES ---
+    function createGlowTexture() {
+      const c = document.createElement('canvas');
+      c.width = c.height = 64;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.2, 'rgba(0,240,255,0.95)');
+      g.addColorStop(0.5, 'rgba(0,100,255,0.45)');
+      g.addColorStop(0.8, 'rgba(192,132,252,0.15)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 64, 64);
+      const tex = new THREE.CanvasTexture(c);
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    function createDiamondTexture() {
+      const c = document.createElement('canvas');
+      c.width = c.height = 64;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.25, 'rgba(0,240,255,0.85)');
+      g.addColorStop(0.6, 'rgba(192,132,252,0.3)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 64, 64);
+
+      ctx.save();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2.2;
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.moveTo(32, 4);
+      ctx.lineTo(60, 32);
+      ctx.lineTo(32, 60);
+      ctx.lineTo(4, 32);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(32, 14);
+      ctx.lineTo(50, 32);
+      ctx.lineTo(32, 50);
+      ctx.lineTo(14, 32);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    // --- 5. THREE.JS 3D SCENE & HOLOGRAMS ---
+    let activeModel = 'PORTAL';
+    const container = document.getElementById('webgl-canvas');
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 1000);
+    camera.position.set(0, 0, 22);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    const glowTex = createGlowTexture();
+    const diamondTex = createDiamondTexture();
+
+    // Mouse Tracking in 3D
+    const mouseNDC = new THREE.Vector2(-999, -999);
+    const targetMouse3D = new THREE.Vector3(0, 0, 0);
+    const currentMouse3D = new THREE.Vector3(0, 0, 0);
+    let isMouseActive = false;
+    const planeZ0 = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    const raycaster = new THREE.Raycaster();
+
+    window.addEventListener('mousemove', (e) => {
+      mouseNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      isMouseActive = true;
+      raycaster.setFromCamera(mouseNDC, camera);
+      const intersection = new THREE.Vector3();
+      raycaster.ray.intersectPlane(planeZ0, intersection);
+      if (intersection) targetMouse3D.copy(intersection);
+    });
+
+    // 1. OUTER PARTICLE CLOUD (14,000 diamond sparkles)
+    const CLOUD_COUNT = 14000;
+    const cloudGeo = new THREE.BufferGeometry();
+    const cloudPos = new Float32Array(CLOUD_COUNT * 3);
+    const cloudBasePos = new Float32Array(CLOUD_COUNT * 3);
+    const cloudColors = new Float32Array(CLOUD_COUNT * 3);
+
+    for (let i = 0; i < CLOUD_COUNT; i++) {
+      const u = Math.random(), v = Math.random();
+      const theta = u * 2.0 * Math.PI, phi = Math.acos(2.0 * v - 1.0);
+      const r = 4.2 + Math.pow(Math.random(), 2.2) * (16.5 - 4.2);
+      const x = r * Math.sin(phi) * Math.cos(theta);
+      const y = r * Math.cos(phi);
+      const z = r * Math.sin(phi) * Math.sin(theta);
+      cloudPos[i*3] = cloudBasePos[i*3] = x;
+      cloudPos[i*3+1] = cloudBasePos[i*3+1] = y;
+      cloudPos[i*3+2] = cloudBasePos[i*3+2] = z;
+
+      const c = new THREE.Color().lerpColors(new THREE.Color(0x00f0ff), new THREE.Color(0x101538), Math.random() * 0.8);
+      if (Math.random() < 0.18) c.set(0xffffff);
+      else if (Math.random() < 0.25) c.lerp(new THREE.Color(0xc084fc), 0.6);
+      cloudColors[i*3] = c.r; cloudColors[i*3+1] = c.g; cloudColors[i*3+2] = c.b;
+    }
+    cloudGeo.setAttribute('position', new THREE.BufferAttribute(cloudPos, 3));
+    cloudGeo.setAttribute('color', new THREE.BufferAttribute(cloudColors, 3));
+
+    const cloudMat = new THREE.PointsMaterial({
+      size: 0.22, map: diamondTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true, opacity: 0.85
+    });
+    const cloudPoints = new THREE.Points(cloudGeo, cloudMat);
+    scene.add(cloudPoints);
+
+    // 2. HOLOGRAM: COSMIC PORTAL
+    const portalGroup = new THREE.Group();
+    scene.add(portalGroup);
+
+    const torusGeom = new THREE.TorusGeometry(3.0, 0.05, 16, 120);
+    const torusWireGeom = new THREE.TorusGeometry(3.2, 0.09, 12, 80);
+    const tCount = torusGeom.attributes.position.count;
+    const tColors = new Float32Array(tCount * 3);
+    const tPos = torusGeom.attributes.position;
+    for (let i = 0; i < tCount; i++) {
+      const angle = Math.atan2(tPos.getY(i), tPos.getX(i));
+      const t = (Math.sin(angle * 2) + 1.0) * 0.5;
+      const c = new THREE.Color(0x00f0ff).lerp(new THREE.Color(0xff007f), t);
+      tColors[i*3] = c.r; tColors[i*3+1] = c.g; tColors[i*3+2] = c.b;
+    }
+    torusGeom.setAttribute('color', new THREE.BufferAttribute(tColors, 3));
+
+    const torusMat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95 });
+    const wireTorusMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.4 });
+    const mainRing = new THREE.Mesh(torusGeom, torusMat);
+    const wireRing = new THREE.Mesh(torusWireGeom, wireTorusMat);
+    portalGroup.add(mainRing);
+    portalGroup.add(wireRing);
+
+    const coreGroup = new THREE.Group();
+    portalGroup.add(coreGroup);
+    const icosaMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4, 0), new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.75 }));
+    const octaMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.85, 0), new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.9 }));
+    coreGroup.add(icosaMesh);
+    coreGroup.add(octaMesh);
+
+    const ACC_COUNT = 1800;
+    const accGeo = new THREE.BufferGeometry();
+    const accPos = new Float32Array(ACC_COUNT * 3);
+    const accCols = new Float32Array(ACC_COUNT * 3);
+    for (let i = 0; i < ACC_COUNT; i++) {
+      const rad = 1.6 + Math.pow(Math.random(), 1.5) * 2.2;
+      const ang = Math.random() * Math.PI * 2;
+      accPos[i*3] = rad * Math.cos(ang);
+      accPos[i*3+1] = (Math.random() - 0.5) * 0.35;
+      accPos[i*3+2] = rad * Math.sin(ang);
+      const c = new THREE.Color().lerpColors(new THREE.Color(0x00f0ff), new THREE.Color(0xff007f), Math.random());
+      if (Math.random() < 0.2) c.set(0xffffff);
+      accCols[i*3] = c.r; accCols[i*3+1] = c.g; accCols[i*3+2] = c.b;
+    }
+    accGeo.setAttribute('position', new THREE.BufferAttribute(accPos, 3));
+    accGeo.setAttribute('color', new THREE.BufferAttribute(accCols, 3));
+    const accPoints = new THREE.Points(accGeo, new THREE.PointsMaterial({ size: 0.28, map: diamondTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true }));
+    portalGroup.add(accPoints);
+
+    // 3. HOLOGRAM: CYBER HUMAN MASK
+    const maskGroup = new THREE.Group();
+    scene.add(maskGroup);
+    const MASK_GRID = 75;
+    const maskPts = [], maskCols = [];
+    for (let i = 0; i < MASK_GRID; i++) {
+      for (let j = 0; j < MASK_GRID; j++) {
+        const u = -1.0 + (2.0 * i) / (MASK_GRID - 1);
+        const v = -1.3 + (2.6 * j) / (MASK_GRID - 1);
+        const faceR = 3.5 * Math.sqrt(Math.max(0, 1.0 - Math.pow(v / 1.35, 2))) * (1.0 - 0.22 * v);
+        const curX = u * 3.3, curY = v * 3.3;
+        if (Math.abs(curX) > faceR) continue;
+
+        const dEyeL = Math.hypot((u - 0.38) / 0.23, (v - 0.32) / 0.14);
+        const dEyeR = Math.hypot((u + 0.38) / 0.23, (v - 0.32) / 0.14);
+        const minEyeDist = Math.min(dEyeL, dEyeR);
+        if (minEyeDist < 0.72) continue;
+
+        const dMouth = Math.hypot(u / 0.34, (v + 0.48) / 0.11);
+        if (dMouth < 0.72) continue;
+
+        const baseZ = Math.sqrt(Math.max(0, 1.0 - Math.pow(u / 1.1, 2) - Math.pow(v / 1.35, 2))) * 2.2;
+        let noseZ = 0;
+        if (Math.abs(u) < 0.25 && v > -0.18 && v < 0.42) {
+          const vNorm = (v - 0.12) / 0.3;
+          noseZ = 1.35 * Math.exp(-Math.pow(u, 2) / 0.015) * Math.max(0, 1.0 - Math.pow(vNorm, 2));
+        }
+        const cheekZ = 0.55 * Math.exp(-(Math.pow(Math.abs(u) - 0.52, 2) + Math.pow(v - 0.06, 2)) / 0.07);
+        let chinZ = v < -0.85 ? 0.65 * Math.exp(-(Math.pow(u, 2) + Math.pow(v + 1.0, 2)) / 0.06) : 0;
+        const curZ = baseZ + noseZ + cheekZ + chinZ + (Math.random() - 0.5) * 0.06;
+        maskPts.push(curX, curY, curZ);
+
+        const color = new THREE.Color();
+        if (minEyeDist <= 1.1) color.set(minEyeDist < 0.82 ? 0xffffff : 0x00f0ff);
+        else if (noseZ > 0.4) color.set(0x00f0ff);
+        else color.lerpColors(new THREE.Color(0x00f0ff), new THREE.Color(0x6366f1), Math.hypot(curX, curY) / 4.0);
+        maskCols.push(color.r, color.g, color.b);
+      }
+    }
+    const maskGeo = new THREE.BufferGeometry();
+    const maskPosArr = new Float32Array(maskPts);
+    const maskBasePosArr = new Float32Array(maskPts);
+    maskGeo.setAttribute('position', new THREE.BufferAttribute(maskPosArr, 3));
+    maskGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(maskCols), 3));
+    const maskMat = new THREE.PointsMaterial({ size: 0.2, map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true, opacity: 0.0 });
+    maskGroup.add(new THREE.Points(maskGeo, maskMat));
+
+    // 4. HOLOGRAM: NEURAL BRAIN SYNAPSE
+    const brainGroup = new THREE.Group();
+    scene.add(brainGroup);
+    const BRAIN_COUNT = 8500;
+    const brainPts = [], brainCols = [];
+    for (let i = 0; i < BRAIN_COUNT; i++) {
+      const yNorm = 1.0 - (2.0 * (i + 0.5)) / BRAIN_COUNT;
+      const rAtY = Math.sqrt(Math.max(0, 1.0 - yNorm * yNorm));
+      const goldenAngle = i * Math.PI * (3.0 - Math.sqrt(5.0));
+      let x0 = 2.7 * rAtY * Math.cos(goldenAngle);
+      let y0 = 2.4 * yNorm;
+      let z0 = 3.2 * rAtY * Math.sin(goldenAngle);
+      x0 *= (1.0 - 0.6 * Math.exp(-Math.pow(x0, 2) / 0.3));
+      const fold = Math.sin(noise3D(x0 * 1.6, y0 * 1.6, z0 * 1.6) * 6.5);
+      const disp = 1.0 + fold * 0.15;
+      brainPts.push(x0 * disp, y0 * disp, z0 * disp);
+
+      const col = new THREE.Color();
+      if (fold > 0.3) col.lerpColors(new THREE.Color(0x00f0ff), new THREE.Color(0xffffff), (fold - 0.3) / 0.7);
+      else col.lerpColors(new THREE.Color(0xa855f7), new THREE.Color(0x00f0ff), (0.3 - fold) / 1.3);
+      brainCols.push(col.r, col.g, col.b);
+    }
+    const brainGeo = new THREE.BufferGeometry();
+    const brainPosArr = new Float32Array(brainPts);
+    const brainBasePosArr = new Float32Array(brainPts);
+    brainGeo.setAttribute('position', new THREE.BufferAttribute(brainPosArr, 3));
+    brainGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(brainCols), 3));
+    const brainMat = new THREE.PointsMaterial({ size: 0.18, map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true, opacity: 0.0 });
+    brainGroup.add(new THREE.Points(brainGeo, brainMat));
+
+    // 5. HOLOGRAM: QUANTUM HELIX
+    const helixGroup = new THREE.Group();
+    scene.add(helixGroup);
+    const HELIX_COUNT = 550;
+    const helixPts = [], helixCols = [];
+    for (let i = 0; i < HELIX_COUNT; i++) {
+      const t = i / (HELIX_COUNT - 1);
+      const y = -4.2 + t * 8.4;
+      const a1 = t * Math.PI * 8;
+      const a2 = a1 + Math.PI;
+      helixPts.push(1.9 * Math.cos(a1), y, 1.9 * Math.sin(a1));
+      helixCols.push(0, 0.94, 1);
+      helixPts.push(1.9 * Math.cos(a2), y, 1.9 * Math.sin(a2));
+      helixCols.push(0.75, 0.52, 0.98);
+    }
+    const helixGeo = new THREE.BufferGeometry();
+    helixGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(helixPts), 3));
+    helixGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(helixCols), 3));
+    const helixMat = new THREE.PointsMaterial({ size: 0.28, map: diamondTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true, opacity: 0.0 });
+    helixGroup.add(new THREE.Points(helixGeo, helixMat));
+
+    // Opacities & Animation Loop
+    const opacities = { PORTAL: 1.0, MASK: 0.0, BRAIN: 0.0, HELIX: 0.0 };
+    const clock = new THREE.Clock();
+    let frameCount = 0, lastFps = performance.now();
+
+    function updatePhysics(geo, posArr, baseArr, grp) {
+      const count = posArr.length / 3;
+      const lMouse = currentMouse3D.clone();
+      grp.worldToLocal(lMouse);
+      for (let i = 0; i < count; i++) {
+        const bx = baseArr[i*3], by = baseArr[i*3+1], bz = baseArr[i*3+2];
+        let cx = posArr[i*3], cy = posArr[i*3+1], cz = posArr[i*3+2];
+        if (isMouseActive) {
+          const dx = bx - lMouse.x, dy = by - lMouse.y, dz = bz - lMouse.z;
+          const d = Math.hypot(dx, dy, dz);
+          if (d < 3.8 && d > 0.001) {
+            const factor = Math.pow(1.0 - d / 3.8, 2) * 1.4;
+            cx += (bx + (dx / d) * factor - cx) * 0.12;
+            cy += (by + (dy / d) * factor - cy) * 0.12;
+            cz += (bz + (dz / d) * factor - cz) * 0.12;
+          } else {
+            cx += (bx - cx) * 0.06; cy += (by - cy) * 0.06; cz += (bz - cz) * 0.06;
+          }
+        } else {
+          cx += (bx - cx) * 0.06; cy += (by - cy) * 0.06; cz += (bz - cz) * 0.06;
+        }
+        posArr[i*3] = cx; posArr[i*3+1] = cy; posArr[i*3+2] = cz;
+      }
+      geo.attributes.position.needsUpdate = true;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsed = clock.getElapsedTime();
+
+      // FPS Measurement
+      frameCount++;
+      const now = performance.now();
+      if (now - lastFps >= 500) {
+        const fps = Math.round((frameCount * 1000) / (now - lastFps));
+        document.getElementById('hud-fps-val').textContent = fps + ' FPS';
+        frameCount = 0;
+        lastFps = now;
+      }
+
+      if (isMouseActive) currentMouse3D.lerp(targetMouse3D, 0.08);
+
+      // Lerp Opacities
+      const speed = 0.08;
+      opacities.PORTAL += ((activeModel === 'PORTAL' ? 1 : 0) - opacities.PORTAL) * speed;
+      opacities.MASK += ((activeModel === 'MASK' ? 1 : 0) - opacities.MASK) * speed;
+      opacities.BRAIN += ((activeModel === 'BRAIN' ? 1 : 0) - opacities.BRAIN) * speed;
+      opacities.HELIX += ((activeModel === 'HELIX' ? 1 : 0) - opacities.HELIX) * speed;
+
+      // Portal
+      portalGroup.visible = opacities.PORTAL > 0.01;
+      if (portalGroup.visible) {
+        torusMat.opacity = opacities.PORTAL * 0.95;
+        wireTorusMat.opacity = opacities.PORTAL * 0.4;
+        icosaMesh.material.opacity = opacities.PORTAL * 0.75;
+        octaMesh.material.opacity = opacities.PORTAL * 0.9;
+        mainRing.rotation.z = elapsed * 0.15;
+        wireRing.rotation.z = -elapsed * 0.2;
+        coreGroup.rotation.x = elapsed * 0.4;
+        coreGroup.rotation.y = elapsed * 0.6;
+        accPoints.rotation.y = elapsed * 0.25;
+        portalGroup.rotation.y = mouseNDC.x * 0.25;
+        portalGroup.rotation.x = -mouseNDC.y * 0.18;
+      }
+
+      // Mask
+      maskGroup.visible = opacities.MASK > 0.01;
+      if (maskGroup.visible) {
+        maskMat.opacity = opacities.MASK;
+        maskGroup.rotation.y = mouseNDC.x * 0.3;
+        maskGroup.rotation.x = -mouseNDC.y * 0.2;
+        updatePhysics(maskGeo, maskPosArr, maskBasePosArr, maskGroup);
+      }
+
+      // Brain
+      brainGroup.visible = opacities.BRAIN > 0.01;
+      if (brainGroup.visible) {
+        brainMat.opacity = opacities.BRAIN;
+        brainGroup.rotation.y = -Math.PI / 4.5 + elapsed * 0.1 + mouseNDC.x * 0.22;
+        brainGroup.rotation.x = 0.08 - mouseNDC.y * 0.15;
+        updatePhysics(brainGeo, brainPosArr, brainBasePosArr, brainGroup);
+      }
+
+      // Helix
+      helixGroup.visible = opacities.HELIX > 0.01;
+      if (helixGroup.visible) {
+        helixMat.opacity = opacities.HELIX;
+        helixGroup.rotation.y = elapsed * 0.4 + mouseNDC.x * 0.25;
+        helixGroup.rotation.x = -mouseNDC.y * 0.2;
+      }
+
+      // Outer Cloud Drift & Repulsion
+      const cPos = cloudGeo.attributes.position.array;
+      for (let i = 0; i < CLOUD_COUNT; i++) {
+        const bx = cloudBasePos[i*3], by = cloudBasePos[i*3+1], bz = cloudBasePos[i*3+2];
+        const drift = noise3D(bx * 0.06, by * 0.06 + elapsed * 0.06, bz * 0.06) * 0.3;
+        let px = bx + drift, py = by + drift, pz = bz + drift;
+        if (isMouseActive) {
+          const dx = px - currentMouse3D.x, dy = py - currentMouse3D.y, dz = pz - currentMouse3D.z;
+          const d = Math.hypot(dx, dy, dz);
+          if (d < 4.2 && d > 0.001) {
+            const rep = Math.pow(1.0 - d / 4.2, 2) * 1.3;
+            px += (dx / d) * rep; py += (dy / d) * rep; pz += (dz / d) * rep;
+          }
+        }
+        cPos[i*3] = px; cPos[i*3+1] = py; cPos[i*3+2] = pz;
+      }
+      cloudGeo.attributes.position.needsUpdate = true;
+      cloudPoints.rotation.y = elapsed * 0.02 + mouseNDC.x * 0.08;
+      cloudPoints.rotation.x = Math.sin(elapsed * 0.015) * 0.05 - mouseNDC.y * 0.05;
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // --- 6. SPARKLE CURSOR TRAIL (2D CANVAS) ---
+    const sCanvas = document.getElementById('sparkle-canvas');
+    const sCtx = sCanvas.getContext('2d');
+    sCanvas.width = window.innerWidth;
+    sCanvas.height = window.innerHeight;
+    const sparkles = [];
+    const sparkleColors = ['#00f0ff', '#ffffff', '#c084fc', '#ff007f'];
+    let lastSparkle = 0;
+
+    window.addEventListener('mousemove', (e) => {
+      const now = performance.now();
+      if (now - lastSparkle > 25) {
+        lastSparkle = now;
+        for (let i = 0; i < 2; i++) {
+          sparkles.push({
+            x: e.clientX + (Math.random() - 0.5) * 8,
+            y: e.clientY + (Math.random() - 0.5) * 8,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: (Math.random() - 0.5) * 1.5 - 0.5,
+            size: 1.5 + Math.random() * 2.5,
+            alpha: 1.0,
+            color: sparkleColors[Math.floor(Math.random() * sparkleColors.length)]
+          });
+        }
+      }
+    });
+
+    function renderSparkles() {
+      requestAnimationFrame(renderSparkles);
+      sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
+      for (let i = sparkles.length - 1; i >= 0; i--) {
+        const p = sparkles[i];
+        p.x += p.vx; p.y += p.vy; p.alpha -= 0.035;
+        if (p.alpha <= 0) { sparkles.splice(i, 1); continue; }
+
+        sCtx.save();
+        sCtx.globalAlpha = p.alpha;
+        sCtx.fillStyle = p.color;
+        sCtx.shadowColor = p.color;
+        sCtx.shadowBlur = p.size * 2;
+        sCtx.beginPath();
+        sCtx.moveTo(p.x, p.y - p.size * 2);
+        sCtx.lineTo(p.x + p.size * 0.4, p.y);
+        sCtx.lineTo(p.x + p.size * 2, p.y);
+        sCtx.lineTo(p.x + p.size * 0.4, p.y);
+        sCtx.lineTo(p.x, p.y + p.size * 2);
+        sCtx.lineTo(p.x - p.size * 0.4, p.y);
+        sCtx.lineTo(p.x - p.size * 2, p.y);
+        sCtx.lineTo(p.x - p.size * 0.4, p.y);
+        sCtx.closePath();
+        sCtx.fill();
+        sCtx.restore();
+      }
+    }
+    renderSparkles();
+    window.addEventListener('resize', () => { sCanvas.width = window.innerWidth; sCanvas.height = window.innerHeight; });
+
+    // --- 7. UI LOGIC & RENDERERS ---
+    function setHologram(model) {
+      activeModel = model;
+      document.getElementById('hud-model-val').textContent = model;
+      document.querySelectorAll('.model-pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.model === model);
+      });
+      sound.playWarp();
+    }
+
+    // Model Pill Buttons
+    document.querySelectorAll('.model-pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => setHologram(btn.dataset.model));
+    });
+    document.getElementById('cycle-model-btn').addEventListener('click', () => {
+      const list = ['PORTAL', 'MASK', 'BRAIN', 'HELIX'];
+      const next = list[(list.indexOf(activeModel) + 1) % list.length];
+      setHologram(next);
+    });
+
+    // Audio Button Toggle
+    const audioBtn = document.getElementById('audio-toggle-btn');
+    audioBtn.addEventListener('click', () => {
+      const playing = sound.toggle();
+      audioBtn.classList.toggle('active', playing);
+      document.getElementById('audio-label').textContent = playing ? 'AUDIO ON' : 'SOUND';
+    });
+
+    // UTC Clock
+    setInterval(() => {
+      const d = new Date();
+      document.getElementById('utc-clock').textContent = d.toUTCString().split(' ')[4] + ' UTC';
+    }, 1000);
+
+    // Render Projects
+    const projectsContainer = document.getElementById('projects-container');
+    function renderProjects(filter = 'ALL') {
+      projectsContainer.innerHTML = '';
+      const list = filter === 'ALL' ? PROJECTS : PROJECTS.filter(p => p.category === filter);
+      list.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'cyber-card project-card';
+        card.innerHTML = `
+          <span class="corner-bracket corner-tl"></span>
+          <span class="corner-bracket corner-tr"></span>
+          <span class="corner-bracket corner-bl"></span>
+          <span class="corner-bracket corner-br"></span>
+          <div class="project-card-top">
+            <div class="project-meta">
+              <span class="project-num">#${p.number}</span>
+              <span class="project-category">${p.category}</span>
+            </div>
+            <h3 class="project-title">${p.title}</h3>
+            <div class="project-sub">${p.subtitle}</div>
+            <p class="project-desc">${p.description}</p>
+          </div>
+          <div>
+            <div class="metrics-mini-grid">
+              <div><span class="m-label">${p.metrics[0].label}</span><span class="m-val">${p.metrics[0].value}</span></div>
+              <div><span class="m-label">${p.metrics[1].label}</span><span class="m-val">${p.metrics[1].value}</span></div>
+            </div>
+            <div class="tech-tags">
+              ${p.technologies.slice(0, 3).map(t => `<span class="tech-tag">${t}</span>`).join('')}
+            </div>
+            <div class="card-footer">
+              <button class="preview-3d-btn" onclick="event.stopPropagation(); setHologram('${p.hologramType}')">PREVIEW 3D (${p.hologramType})</button>
+              <span style="color: var(--cyan); font-weight: 700;">CASE STUDY ↗</span>
+            </div>
+          </div>
+        `;
+        card.addEventListener('click', () => openModal(p));
+        card.addEventListener('mouseenter', () => sound.playHover());
+        projectsContainer.appendChild(card);
+      });
+    }
+    renderProjects();
+
+    // Filter Buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        sound.playClick();
+        renderProjects(btn.dataset.filter);
+      });
+    });
+
+    // Render Capabilities
+    const capTabsContainer = document.getElementById('cap-tabs-container');
+    const skillsListContainer = document.getElementById('skills-list');
+    function selectCapTab(idx) {
+      document.querySelectorAll('.cap-tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+      const g = CAPABILITIES[idx];
+      document.getElementById('cluster-num').textContent = `PROTOCOL CLUSTER: ${g.categoryNumber}`;
+      document.getElementById('cluster-title').textContent = g.domain;
+      skillsListContainer.innerHTML = g.skills.map(s => `
+        <div class="skill-item">
+          <div class="skill-meta">
+            <span>${s.name}</span>
+            <span style="color: var(--cyan); font-weight: 700;">${s.level}%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: ${s.level}%;"></div>
+          </div>
+        </div>
+      `).join('');
+      sound.playClick();
+    }
+    CAPABILITIES.forEach((c, idx) => {
+      const btn = document.createElement('button');
+      btn.className = `cap-tab-btn ${idx === 0 ? 'active' : ''}`;
+      btn.innerHTML = `
+        <div class="cap-tab-cat">CATEGORY // ${c.categoryNumber}</div>
+        <div class="cap-tab-name">${c.domain}</div>
+        <div class="cap-tab-desc">${c.description}</div>
+      `;
+      btn.addEventListener('click', () => selectCapTab(idx));
+      btn.addEventListener('mouseenter', () => sound.playHover());
+      capTabsContainer.appendChild(btn);
+    });
+    selectCapTab(0);
+
+    // Render Trajectory
+    const timelineContainer = document.getElementById('timeline-container');
+    TRAJECTORY.forEach((item) => {
+      const el = document.createElement('div');
+      el.className = 'cyber-card timeline-node';
+      el.style.padding = '24px';
+      el.innerHTML = `
+        <div class="timeline-dot"></div>
+        <span class="corner-bracket corner-tl"></span>
+        <span class="corner-bracket corner-tr"></span>
+        <span class="corner-bracket corner-bl"></span>
+        <span class="corner-bracket corner-br"></span>
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); margin-bottom: 4px;">${item.period}</div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; text-transform: uppercase;">${item.role}</h3>
+        <div style="font-family: var(--font-mono); font-size: 12px; color: #888; margin-bottom: 12px;">${item.org}</div>
+        <p style="color: #ccc; font-size: 13px; line-height: 1.6; margin-bottom: 14px;">${item.summary}</p>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          ${item.deliverables.map(d => `<div style="font-size: 12px; color: #888; display: flex; gap: 6px;"><span style="color: var(--cyan);">›</span><span>${d}</span></div>`).join('')}
+        </div>
+      `;
+      timelineContainer.appendChild(el);
+    });
+
+    // Render Manifesto
+    const manifestoContainer = document.getElementById('manifesto-container');
+    MANIFESTO.forEach(m => {
+      const el = document.createElement('div');
+      el.className = 'cyber-card';
+      el.style.padding = '28px';
+      el.innerHTML = `
+        <span class="corner-bracket corner-tl"></span>
+        <span class="corner-bracket corner-tr"></span>
+        <span class="corner-bracket corner-bl"></span>
+        <span class="corner-bracket corner-br"></span>
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); margin-bottom: 6px;">AXIOM // ${m.idx}</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">${m.title}</h3>
+        <div style="font-family: var(--font-mono); font-size: 11px; color: #00f0ffaa; margin-bottom: 12px;">${m.sub}</div>
+        <p style="color: #999; font-size: 13px; line-height: 1.6;">${m.desc}</p>
+      `;
+      manifestoContainer.appendChild(el);
+    });
+
+    // Modal Logic
+    const modal = document.getElementById('project-modal');
+    let currentModalProject = null;
+    function openModal(p) {
+      currentModalProject = p;
+      document.getElementById('m-number').textContent = `ARTIFACT #${p.number}`;
+      document.getElementById('m-title').textContent = p.title;
+      document.getElementById('m-sub').textContent = p.subtitle;
+      document.getElementById('m-desc').textContent = p.description;
+      document.getElementById('m-narrative').textContent = p.fullNarrative;
+      document.getElementById('m-highlight').textContent = p.highlightFeature;
+      document.getElementById('m-metrics').innerHTML = p.metrics.map(m => `
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 8px; font-family: var(--font-mono);">
+          <div style="font-size: 9px; color: #777;">${m.label}</div>
+          <div style="font-size: 13px; color: #a5f3fc; font-weight: 700;">${m.value}</div>
+        </div>
+      `).join('');
+      modal.classList.add('active');
+      sound.playClick();
+    }
+    function closeModal() {
+      modal.classList.remove('active');
+      sound.playClick();
+    }
+    document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-dismiss-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-sync-3d-btn').addEventListener('click', () => {
+      if (currentModalProject) setHologram(currentModalProject.hologramType);
+    });
+
+    // Form Submit
+    const form = document.getElementById('transmit-form');
+    const successBox = document.getElementById('transmit-success');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      sound.playClick();
+      const btn = document.getElementById('transmit-submit-btn');
+      btn.textContent = 'BROADCASTING PACKET...';
+      btn.disabled = true;
+      setTimeout(() => {
+        form.style.display = 'none';
+        successBox.style.display = 'block';
+        sound.playWarp();
+      }, 1200);
+    });
+    document.getElementById('reset-form-btn').addEventListener('click', () => {
+      form.reset();
+      form.style.display = 'block';
+      successBox.style.display = 'none';
+      const btn = document.getElementById('transmit-submit-btn');
+      btn.textContent = 'BROADCAST TO ORBITAL BEACON';
+      btn.disabled = false;
+    });
+
+    // Auto-sync 3D model on scroll
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      const pTop = document.getElementById('projects').offsetTop - 300;
+      const cTop = document.getElementById('capabilities').offsetTop - 300;
+      const tTop = document.getElementById('trajectory').offsetTop - 300;
+
+      if (scrollY < pTop && activeModel !== 'PORTAL') setHologram('PORTAL');
+      else if (scrollY >= pTop && scrollY < cTop && activeModel !== 'MASK') setHologram('MASK');
+      else if (scrollY >= cTop && scrollY < tTop && activeModel !== 'BRAIN') setHologram('BRAIN');
+      else if (scrollY >= tTop && activeModel !== 'HELIX') setHologram('HELIX');
+    });
+  </script>
+</body>
+</html>
