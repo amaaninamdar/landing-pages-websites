@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACTIVE THEORY — Immersive Experience</title>
+  
+  <!-- Architectural Geometric Sans (Space Grotesk as nbarchitekt substitute) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Three.js CDN for standalone WebGL execution directly via file:// -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      /* Colors */
+      --color-void-black: #000000;
+      --color-ghost-white: #ffffff;
+      --color-ash-border: #4d4d4d;
+      --color-smoke: #808080;
+      --color-fog: #999999;
+      --color-pale-mist: #c6c6c6;
+      --color-dusk-violet: #343755;
+
+      /* Typography — Font Families */
+      --font-nbarchitekt: 'Space Grotesk', 'nbarchitekt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-times: 'Times New Roman', 'Times', Georgia, serif;
+      --font-arial: 'Arial', sans-serif;
+
+      /* Typography — Scale */
+      --text-caption: 10px;
+      --text-body-sm: 12px;
+      --text-body: 14px;
+
+      /* Spacing */
+      --spacing-4: 4px;
+      --spacing-6: 6px;
+      --spacing-12: 12px;
+      --spacing-13: 13px;
+      --spacing-14: 14px;
+      --spacing-16: 16px;
+      --spacing-18: 18px;
+      --spacing-28: 28px;
+
+      /* Border Radius */
+      --radius-md: 5px;
+      --radius-xl: 12px;
+      --radius-full: 500px;
+
+      /* Surfaces */
+      --surface-void-canvas: #000000;
+      --surface-translucent-overlay: rgba(0, 0, 0, 0.5);
+      --surface-dusk-violet-surface: #343755;
+      --surface-frosted-glass: rgba(255, 255, 255, 0.10);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      box-shadow: none !important; /* Anti-decoration: No shadows in the void */
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--color-void-black);
+      color: var(--color-ghost-white);
+      font-family: var(--font-nbarchitekt);
+      overflow: hidden;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* WebGL Viewport Container */
+    #webgl-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      background-color: #000000;
+    }
+
+    /* Green Aurora Wash Bleed (Top-Left) */
+    .aurora-wash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 55vw;
+      height: 55vh;
+      background: radial-gradient(ellipse at 0% 0%, rgba(0, 255, 136, 0.08) 0%, rgba(0, 240, 255, 0.035) 45%, transparent 75%);
+      pointer-events: none;
+      z-index: 1;
+      animation: auroraBreathe 9s ease-in-out infinite alternate;
+    }
+
+    @keyframes auroraBreathe {
+      0% { opacity: 0.6; transform: scale(1); }
+      100% { opacity: 1.0; transform: scale(1.08); }
+    }
+
+    /* Typography helpers */
+    .font-serif {
+      font-family: var(--font-times);
+    }
+
+    .font-utilitarian {
+      font-family: var(--font-arial);
+    }
+
+    /* Ghost Navigation Button */
+    .btn-ghost-nav {
+      background: transparent;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      border-radius: var(--radius-md); /* 5px */
+      padding: 1px 6px; /* ultra-compact */
+      font-family: var(--font-nbarchitekt);
+      font-size: var(--text-caption);
+      font-weight: 400;
+      text-transform: uppercase;
+      color: var(--color-ghost-white);
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease, border-color 0.3s ease;
+      line-height: 1.5;
+      text-decoration: none;
+    }
+
+    .btn-ghost-nav:hover, .btn-ghost-nav.active {
+      background: var(--surface-frosted-glass);
+      border-color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Pill Primary Button (Dusk Violet #343755) */
+    .btn-pill-violet {
+      background-color: var(--color-dusk-violet);
+      border: none;
+      border-radius: var(--radius-full); /* 500px */
+      padding: 4px 18px;
+      font-family: var(--font-nbarchitekt);
+      font-size: var(--text-body);
+      font-weight: 700;
+      color: #000000;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.3s ease, filter 0.3s ease;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-pill-violet:hover {
+      opacity: 0.9;
+      filter: brightness(1.15);
+    }
+
+    /* Pill Primary Button (Void Black Tonal Alternative) */
+    .btn-pill-black {
+      background-color: rgba(0, 0, 0, 0.333);
+      border: 1px solid var(--color-ash-border);
+      border-radius: var(--radius-full);
+      padding: 4px 18px;
+      font-family: var(--font-nbarchitekt);
+      font-size: var(--text-body);
+      font-weight: 700;
+      color: var(--color-ghost-white);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.3s ease, border-color 0.3s ease;
+      text-decoration: none;
+    }
+
+    .btn-pill-black:hover {
+      background-color: var(--surface-frosted-glass);
+      border-color: var(--color-fog);
+    }
+
+    /* Ghost Card Container */
+    .ghost-card {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid var(--color-ash-border);
+      border-radius: var(--radius-xl); /* 12px */
+      padding: 24px var(--spacing-28);
+      transition: border-color 0.4s ease, background 0.4s ease;
+    }
+
+    .ghost-card:hover {
+      border-color: var(--color-fog);
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    /* Pill Tags */
+    .pill-tag {
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-ash-border);
+      padding: 2px 10px;
+      font-family: var(--font-nbarchitekt);
+      font-size: var(--text-caption);
+      font-weight: 400;
+      text-transform: uppercase;
+      color: var(--color-pale-mist);
+      letter-spacing: 0.05em;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    /* Hairline Link */
+    .hairline-link {
+      color: var(--color-pale-mist);
+      text-decoration: none;
+      font-family: var(--font-times);
+      font-size: 16px;
+      transition: color 0.2s ease;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .hairline-link:hover {
+      color: var(--color-ghost-white);
+      text-decoration: underline;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-ash-border);
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--color-smoke);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WebGL Canvas & Aurora Bleed -->
+  <div id="webgl-container"></div>
+  <div class="aurora-wash"></div>
+
+  <!-- Header Navigation -->
+  <header style="position: fixed; top: 0; left: 0; right: 0; padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; z-index: 40; pointer-events: none;">
+    <div style="display: flex; align-items: center; gap: 12px; pointer-events: auto;">
+      <button onclick="resetToVoid()" style="background: none; border: none; padding: 0; cursor: pointer; color: #ffffff;">
+        <span style="font-family: var(--font-nbarchitekt); fontSize: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;">
+          ACTIVE THEORY
+        </span>
+      </button>
+      <span style="font-family: var(--font-nbarchitekt); font-size: 10px; color: var(--color-smoke); letter-spacing: 0.08em;">
+        [SYSTEM 2.0 // DEEP SPACE]
+      </span>
+    </div>
+
+    <!-- Pinned Top-Right Floating Ghost Nav -->
+    <nav style="display: flex; align-items: center; gap: 8px; pointer-events: auto;">
+      <!-- Audio Toggle Button (5px radius ghost button) -->
+      <button id="audio-toggle-btn" onclick="toggleAudio()" aria-label="Toggle Cosmic Ambient Synthesizer" class="btn-ghost-nav" style="height: 22px; padding: 2px 6px;">
+        <svg id="audio-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+          <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+          <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+          <line x1="12" y1="19" x2="12" y2="23"></line>
+          <line x1="8" y1="23" x2="16" y2="23"></line>
+        </svg>
+      </button>
+
+      <!-- Work Ghost Button -->
+      <button id="nav-work-btn" class="btn-ghost-nav" onclick="toggleWorkDrawer()">
+        WORK <span style="margin-left: 4px; opacity: 0.65; font-size: 9px;">(04)</span>
+      </button>
+
+      <!-- Divider Dot -->
+      <span style="display: inline-block; width: 3px; height: 3px; border-radius: 50%; background-color: var(--color-ash-border); margin: 0 2px;"></span>
+
+      <!-- About Ghost Button -->
+      <button id="nav-about-btn" class="btn-ghost-nav" onclick="openAboutModal()">
+        ABOUT
+      </button>
+
+      <!-- Divider Dot -->
+      <span style="display: inline-block; width: 3px; height: 3px; border-radius: 50%; background-color: var(--color-ash-border); margin: 0 2px;"></span>
+
+      <!-- Contact Ghost Button -->
+      <button id="nav-contact-btn" class="btn-ghost-nav" onclick="openContactModal()">
+        CONTACT
+      </button>
+    </nav>
+  </header>
+
+  <!-- Hero Centerpiece & Telemetry Overlay -->
+  <div id="hero-overlay" style="position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; padding: 24px 28px; pointer-events: none; transition: opacity 0.8s ease;">
+    <div></div>
+
+    <!-- Centerpiece Text & Dusk Violet Pill CTA -->
+    <div style="display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 640px; margin: 180px auto 0 auto;">
+      <span style="font-family: var(--font-nbarchitekt); font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--color-smoke); margin-bottom: 8px;">
+        INTERACTIVE 3D // CREATIVE ENGINEERING
+      </span>
+      <h1 style="font-family: var(--font-nbarchitekt); font-size: 28px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ghost-white); margin-bottom: 12px; line-height: 1.2;">
+        THE VOID IS NOT EMPTY
+      </h1>
+      <p class="font-serif" style="font-size: 16px; line-height: 1.88; color: var(--color-pale-mist); margin-bottom: 24px; max-width: 520px;">
+        We sculpt digital phenomena at the frontier of real-time graphics and spatial computing, where chrome whispers and the rendered world commands attention.
+      </p>
+      
+      <div style="pointer-events: auto; display: flex; gap: 12px; align-items: center;">
+        <button onclick="toggleWorkDrawer()" class="btn-pill-violet">
+          <span>EXPLORE WORK</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+
+        <button onclick="openAboutModal()" class="btn-pill-black">
+          <span>VIEW MANIFESTO</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Telemetry Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-family: var(--font-nbarchitekt); font-size: 10px; color: var(--color-ash-border); letter-spacing: 0.1em;">
+          PORTAL CORE: 0.170.0 WEBGL // ACTIVE
+        </span>
+        <span style="font-family: var(--font-nbarchitekt); font-size: 10px; color: var(--color-smoke); letter-spacing: 0.05em;">
+          GRAVITATIONAL FIELD: 1,600 SPECS CASCADE
+        </span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; font-family: var(--font-nbarchitekt); font-size: 10px; color: var(--color-smoke); letter-spacing: 0.08em;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+        </svg>
+        <span>MOVE CURSOR TO ROTATE VIEWPORT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Work Case Study Drawer Overlay -->
+  <div id="work-drawer" style="display: none; position: fixed; inset: 0; z-index: 50; justify-content: flex-end; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
+    <aside style="width: 100%; max-width: 680px; height: 100%; background-color: rgba(0, 0, 0, 0.88); border-left: 1px solid var(--color-ash-border); display: flex; flex-direction: column; overflow-y: auto; padding: 32px var(--spacing-28); position: relative;">
+      
+      <!-- Drawer Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 24px; border-bottom: 1px solid var(--color-ash-border); margin-bottom: 28px;">
+        <div>
+          <span style="font-family: var(--font-nbarchitekt); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-smoke);">
+            SELECTED ARCHIVE // 2024–2026
+          </span>
+          <h2 style="font-family: var(--font-nbarchitekt); font-size: 18px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-ghost-white); margin-top: 4px;">
+            PROJECT REPERTORY
+          </h2>
+        </div>
+        <button onclick="toggleWorkDrawer()" class="btn-ghost-nav" style="padding: 4px 8px;">
+          CLOSE
+        </button>
+      </div>
+
+      <!-- Project Cards Stack -->
+      <div id="project-cards-container" style="display: flex; flex-direction: column; gap: 24px;"></div>
+
+      <!-- Drawer Footer -->
+      <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--color-ash-border); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-family: var(--font-nbarchitekt); font-size: 10px; color: var(--color-smoke); letter-spacing: 0.05em;">
+          END OF RECORD // ALL WORKS ACTIVE THEORY 2026
+        </span>
+        <button onclick="toggleWorkDrawer()" class="btn-ghost-nav" style="padding: 2px 8px;">
+          RETURN TO VOID
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Deep Dive Project Modal -->
+  <div id="project-modal" style="display: none; position: fixed; inset: 0; z-index: 60; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 24px;">
+    <div class="ghost-card" style="width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; background-color: rgba(0, 0, 0, 0.94); display: flex; flex-direction: column; gap: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--color-ash-border); padding-bottom: 16px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span id="modal-badge" class="pill-tag" style="color: #00f0ff; border-color: rgba(0, 240, 255, 0.4);">
+              CASE STUDY 01
+            </span>
+            <span id="modal-client" style="font-family: var(--font-nbarchitekt); font-size: 12px; color: var(--color-smoke);">
+              Client // Year
+            </span>
+          </div>
+          <h2 id="modal-title" style="font-family: var(--font-nbarchitekt); font-size: 22px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-ghost-white);">
+            PROJECT TITLE
+          </h2>
+        </div>
+        <button onclick="closeProjectModal()" class="btn-ghost-nav" style="padding: 4px 8px;">
+          CLOSE
+        </button>
+      </div>
+
+      <div>
+        <h4 style="font-family: var(--font-nbarchitekt); font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-fog); margin-bottom: 10px;">
+          PROJECT ARCHITECTURE & PHILOSOPHY
+        </h4>
+        <p id="modal-narrative" class="font-serif" style="font-size: 16px; line-height: 1.88; color: var(--color-ghost-white);"></p>
+      </div>
+
+      <div id="modal-metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; padding: 16px; background-color: rgba(255, 255, 255, 0.02); border: 1px solid rgba(77, 77, 77, 0.4); border-radius: var(--radius-md);"></div>
+
+      <div>
+        <span style="font-family: var(--font-nbarchitekt); font-size: 10px; color: var(--color-fog); letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 8px;">
+          CORE ENGINE SPECIFICATIONS
+        </span>
+        <div id="modal-tech" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--color-ash-border); padding-top: 16px;">
+        <button onclick="closeProjectModal()" class="btn-ghost-nav" style="padding: 6px 14px;">
+          BACK TO LIST
+        </button>
+        <button onclick="alert('Initiating WebGL spatial telemetry sequence...')" class="btn-pill-violet">
+          <span>LAUNCH RUNTIME</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Studio Manifesto Modal -->
+  <div id="about-modal" style="display: none; position: fixed; inset: 0; z-index: 60; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 24px;">
+    <div class="ghost-card" style="width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; background-color: rgba(0, 0, 0, 0.94); display: flex; flex-direction: column; gap: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-ash-border); padding-bottom: 16px;">
+        <h3 style="font-family: var(--font-nbarchitekt); font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ghost-white);">
+          MANIFESTO // ACTIVE THEORY
+        </h3>
+        <button onclick="closeAboutModal()" class="btn-ghost-nav" style="padding: 2px 6px;">
+          CLOSE
+        </button>
+      </div>
+      <p class="font-serif" style="font-size: 16px; line-height: 1.88; color: var(--color-ghost-white);">
+        Active Theory operates as a cosmic void stage where the immersive experience is the design and the UI chrome barely exists. The canvas is near-total black (#000000) with UI elements floating as whispered ghost containers — translucent surfaces, hairline borders, and pill-shaped controls that recede into the dark.
+      </p>
+      <p class="font-serif" style="font-size: 16px; line-height: 1.88; color: var(--color-pale-mist);">
+        Typography splits between an architectural geometric sans for navigation and CTAs, and a deliberate editorial serif for body copy, creating an unexpected contrast that signals craft over convention. Color is rationed to a single muted violet accent (#343755) and pure white text.
+      </p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+        <div style="border: 1px solid var(--color-ash-border); border-radius: var(--radius-md); padding: 12px; background: rgba(255,255,255,0.02);">
+          <span style="font-size: 10px; color: var(--color-smoke); letter-spacing: 0.05em;">01 // VOID CANVAS</span>
+          <p class="font-serif" style="font-size: 14px; line-height: 1.5; color: #fff; margin-top: 6px;">Absolute black acts as infinite backdrop. No projected light or shadows.</p>
+        </div>
+        <div style="border: 1px solid var(--color-ash-border); border-radius: var(--radius-md); padding: 12px; background: rgba(255,255,255,0.02);">
+          <span style="font-size: 10px; color: var(--color-smoke); letter-spacing: 0.05em;">02 // HAIRLINE CHROME</span>
+          <p class="font-serif" style="font-size: 14px; line-height: 1.5; color: #fff; margin-top: 6px;">Boundaries defined solely by 1px hairlines. Zero visual elevation bloat.</p>
+        </div>
+        <div style="border: 1px solid var(--color-ash-border); border-radius: var(--radius-md); padding: 12px; background: rgba(255,255,255,0.02);">
+          <span style="font-size: 10px; color: var(--color-smoke); letter-spacing: 0.05em;">03 // COLOR RATIONING</span>
+          <p class="font-serif" style="font-size: 14px; line-height: 1.5; color: #fff; margin-top: 6px;">Dusk Violet strictly for singular CTAs so 3D renders carry the spectrum.</p>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--color-ash-border); padding-top: 16px;">
+        <button onclick="closeAboutModal()" class="btn-pill-violet">
+          RETURN TO VOID
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Modal -->
+  <div id="contact-modal" style="display: none; position: fixed; inset: 0; z-index: 60; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 24px;">
+    <div class="ghost-card" style="width: 100%; max-width: 540px; background-color: rgba(0, 0, 0, 0.94); display: flex; flex-direction: column; gap: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-ash-border); padding-bottom: 16px;">
+        <div>
+          <span style="font-size: 10px; color: var(--color-smoke); letter-spacing: 0.12em;">COMMUNICATION CHANNEL</span>
+          <h3 style="font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ghost-white); margin-top: 2px;">TRANSMIT TO COMMAND</h3>
+        </div>
+        <button onclick="closeContactModal()" class="btn-ghost-nav" style="padding: 2px 6px;">
+          CLOSE
+        </button>
+      </div>
+      <form onsubmit="handleContactSubmit(event)" style="display: flex; flex-direction: column; gap: 16px;">
+        <p class="font-serif" style="font-size: 16px; line-height: 1.88; color: var(--color-pale-mist);">Direct inquiries, spatial computing commissions, and real-time graphics collaborations.</p>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-size: 10px; color: var(--color-smoke); letter-spacing: 0.08em; text-transform: uppercase;">IDENTITY / ENTITY</label>
+          <input type="text" required placeholder="Agent / Organization" style="background: rgba(255,255,255,0.04); border: 1px solid var(--color-ash-border); border-radius: var(--radius-md); padding: 8px 12px; color: #fff; font-family: var(--font-nbarchitekt); font-size: 13px; outline: none;" />
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-size: 10px; color: var(--color-smoke); letter-spacing: 0.08em; text-transform: uppercase;">RETURN FREQUENCY / EMAIL</label>
+          <input type="email" required placeholder="signal@domain.com" style="background: rgba(255,255,255,0.04); border: 1px solid var(--color-ash-border); border-radius: var(--radius-md); padding: 8px 12px; color: #fff; font-family: var(--font-nbarchitekt); font-size: 13px; outline: none;" />
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-size: 10px; color: var(--color-smoke); letter-spacing: 0.08em; text-transform: uppercase;">MISSION SCOPE</label>
+          <textarea required rows="3" placeholder="Describe parameters and timeline..." style="background: rgba(255,255,255,0.04); border: 1px solid var(--color-ash-border); border-radius: var(--radius-md); padding: 8px 12px; color: #fff; font-family: var(--font-times); font-size: 15px; outline: none; resize: none;"></textarea>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-ash-border); padding-top: 16px;">
+          <span style="font-size: 10px; color: var(--color-smoke);">ENCRYPTED TLS 1.3</span>
+          <button type="submit" class="btn-pill-violet">
+            <span>TRANSMIT DISPATCH</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Translucent Cookie Banner (Strict 16px top / 28px horizontal / 32px bottom padding) -->
+  <div id="cookie-banner" role="region" aria-label="Privacy & Cookie Consent" style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 48px); max-width: 820px; z-index: 45; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border-radius: var(--radius-xl); border: 1px solid var(--color-ash-border); padding: 16px 28px 32px 28px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <span style="font-family: var(--font-nbarchitekt); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ghost-white);">
+        DATA INTEGRITY & TELEMETRY PROTOCOL
+      </span>
+      <button onclick="dismissCookieBanner()" style="background: none; border: none; color: var(--color-smoke); cursor: pointer;">
+        ✕
+      </button>
+    </div>
+
+    <!-- Times 16px line-height 1.88 body copy -->
+    <p class="font-serif" style="font-size: 16px; line-height: 1.88; color: var(--color-ghost-white);">
+      We utilize essential telemetry and GPU performance monitoring cookies to render the deep-space WebGL simulation and harmonize spatial audio nodes. 
+      <button onclick="openAboutModal()" class="hairline-link">Read our Privacy Architecture</button>.
+    </p>
+
+    <!-- Utilitarian Arial compliance micro-copy & Actions -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding-top: 8px;">
+      <span class="font-utilitarian" style="font-size: 13px; line-height: 1.2; color: var(--color-smoke);">
+        ISO-27001 compliant · Cryptographic session validation only
+      </span>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button onclick="dismissCookieBanner()" class="btn-ghost-nav" style="padding: 4px 10px;">
+          PREFERENCES
+        </button>
+        <button onclick="dismissCookieBanner()" class="btn-pill-violet" style="padding: 4px 18px;">
+          ACKNOWLEDGE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1. Projects Data
+    const PROJECTS = [
+      {
+        id: 'dreamwave',
+        number: '01',
+        title: 'DREAMWAVE HORIZON',
+        client: 'Active Theory Labs',
+        year: '2026',
+        category: 'Spatial Audio & WebGL',
+        tags: ['Real-time 3D', 'Web Audio API', 'Procedural Shaders'],
+        description: 'A nocturnal sensory expedition exploring acoustic tension across infinite black space. The architecture dissolves physical boundaries through gravitational particle simulations and real-time volumetric light dispersion.',
+        fullNarrative: 'Built as an autonomous virtual landscape, Dreamwave Horizon operates at the intersection of mathematical order and organic chaos. Visitors pilot through a vacuum where sound frequencies morph the surrounding wireframe geometry. Every particle responds dynamically to spatial audio nodes, rendering over one hundred thousand points of light at a continuous sixty frames per second without tether to standard screen constraints.',
+        technologies: ['Three.js', 'Custom GLSL Shaders', 'Web Audio Synth', 'WebGL 2.0'],
+        metrics: [
+          { label: 'Particles Rendered', value: '120,000+' },
+          { label: 'Latency', value: '16.6ms' },
+          { label: 'Acoustic Nodes', value: '32 Ch' }
+        ]
+      },
+      {
+        id: 'cybervoxel',
+        number: '02',
+        title: 'CYBERVOXEL KINETICS',
+        client: 'Monolith Spatial Systems',
+        year: '2025',
+        category: 'Deep Space Telemetry',
+        tags: ['Orbital Command', 'WebGL', 'Architectural UI'],
+        description: 'Interactive control deck for orbital satellite arrays. Whispered ghost interfaces render telemetry data alongside live three-dimensional orbital meshes against absolute dark void.',
+        fullNarrative: 'Cybervoxel Kinetics redefines mission command typography and telemetry visualization. By restricting visual chrome to hairline separators and single-hue indications, mission operators maintain absolute focus on orbital trajectories. Complex orbital mechanics are translated into crystalline geometric lattices that breathe with planetary rotation.',
+        technologies: ['WebGL Core', 'Quaternion Kinematics', 'Hardware Instancing', 'TypeScript'],
+        metrics: [
+          { label: 'Live Satellites Tracked', value: '4,280' },
+          { label: 'Interface Overhead', value: '< 2%' },
+          { label: 'Refresh Rate', value: '120 Hz' }
+        ]
+      },
+      {
+        id: 'nebula-fluidum',
+        number: '03',
+        title: 'NEBULA FLUIDUM',
+        client: 'Solstice Sound Lab',
+        year: '2025',
+        category: 'Holographic Identity',
+        tags: ['GPU Particles', 'Fluid Dynamics', 'Generative Art'],
+        description: 'Generative brand artifact that pulses in harmony with cosmic electromagnetic radiation. Micro-particles cascade in gravitational fountain arcs, folding upon themselves in silent equilibrium.',
+        fullNarrative: 'Commissioned as an unrepeatable digital talisman, Nebula Fluidum captures atmospheric disturbance and transforms it into celestial currents. The central portal acts as a focal lens, drawing surrounding specks of gold and cyan into its singularity before ejecting them in rhythmic cascades across the cosmic velvet canvas.',
+        technologies: ['Compute Shaders', 'Curl Noise Vector Fields', 'Physically Based Bloom'],
+        metrics: [
+          { label: 'Field Dimensions', value: '4D Vector' },
+          { label: 'Shader Passes', value: '7 Multipass' },
+          { label: 'Palette Variance', value: 'Algorithmic' }
+        ]
+      },
+      {
+        id: 'aether-resonance',
+        number: '04',
+        title: 'AETHER RESONANCE',
+        client: 'Chamber Acoustics Institute',
+        year: '2024',
+        category: 'Audiovisual Exhibition',
+        tags: ['Ethereal Void', 'Binaural Audio', 'Minimalist Chrome'],
+        description: 'An architectural monument to quietude. Designed for acoustic meditation, viewers modulate harmonic resonances by traversing geometric planes suspended in vacuum.',
+        fullNarrative: 'The experience rejects traditional visual noise in favor of radical reduction. Pure black surfaces act as acoustic absorbers, while thin wireframe lines pulse softly whenever harmonic frequencies align. It offers an asylum from the modern sensory deluge, proving that silence and emptiness hold unprecedented aesthetic power.',
+        technologies: ['WebRTC Audio Grid', 'Three.js BufferGeometry', 'Binaural Spatializer'],
+        metrics: [
+          { label: 'Harmonic Range', value: '18Hz – 22kHz' },
+          { label: 'Spatial Depth', value: 'Infinite' },
+          { label: 'Color Saturation', value: 'Zero Base' }
+        ]
+      }
+    ];
+
+    // Render Project Cards in Drawer
+    const cardsContainer = document.getElementById('project-cards-container');
+    PROJECTS.forEach(project => {
+      const card = document.createElement('article');
+      card.className = 'ghost-card';
+      card.style.cursor = 'pointer';
+      card.style.display = 'flex';
+      card.style.flexDirection = 'column';
+      card.style.gap = '14px';
+      card.onclick = () => openProjectModal(project);
+
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; font-weight: 700; color: var(--color-smoke);">${project.number}</span>
+            <span style="font-size: 12px; color: var(--color-pale-mist);">${project.client}</span>
+          </div>
+          <span style="font-size: 10px; color: var(--color-smoke);">${project.year}</span>
+        </div>
+        <h3 style="font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ghost-white); margin: 0;">
+          ${project.title}
+        </h3>
+        <p class="font-serif" style="font-size: 16px; line-height: 1.88; color: var(--color-ghost-white); margin: 0;">
+          ${project.description}
+        </p>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+          ${project.tags.map(t => `<span class="pill-tag">${t}</span>`).join('')}
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid rgba(77,77,77,0.4); margin-top: 4px;">
+          <span style="font-size: 10px; color: var(--color-fog);">CATEGORY: ${project.category.toUpperCase()}</span>
+          <span class="hairline-link" style="font-size: 14px;">Inspect Case Study &rarr;</span>
+        </div>
+      `;
+      cardsContainer.appendChild(card);
+    });
+
+    // 2. Navigation & Modal Handlers
+    function toggleWorkDrawer() {
+      const drawer = document.getElementById('work-drawer');
+      const isVisible = drawer.style.display === 'flex';
+      drawer.style.display = isVisible ? 'none' : 'flex';
+      document.getElementById('nav-work-btn').classList.toggle('active', !isVisible);
+    }
+
+    function openAboutModal() {
+      document.getElementById('about-modal').style.display = 'flex';
+      document.getElementById('nav-about-btn').classList.add('active');
+    }
+    function closeAboutModal() {
+      document.getElementById('about-modal').style.display = 'none';
+      document.getElementById('nav-about-btn').classList.remove('active');
+    }
+
+    function openContactModal() {
+      document.getElementById('contact-modal').style.display = 'flex';
+      document.getElementById('nav-contact-btn').classList.add('active');
+    }
+    function closeContactModal() {
+      document.getElementById('contact-modal').style.display = 'none';
+      document.getElementById('nav-contact-btn').classList.remove('active');
+    }
+
+    function resetToVoid() {
+      document.getElementById('work-drawer').style.display = 'none';
+      document.getElementById('about-modal').style.display = 'none';
+      document.getElementById('contact-modal').style.display = 'none';
+      document.getElementById('project-modal').style.display = 'none';
+      document.querySelectorAll('.btn-ghost-nav').forEach(b => b.classList.remove('active'));
+    }
+
+    function openProjectModal(p) {
+      document.getElementById('modal-badge').innerText = `CASE STUDY ${p.number}`;
+      document.getElementById('modal-client').innerText = `${p.client} // ${p.year}`;
+      document.getElementById('modal-title').innerText = p.title;
+      document.getElementById('modal-narrative').innerText = p.fullNarrative;
+
+      const metricsDiv = document.getElementById('modal-metrics');
+      metricsDiv.innerHTML = p.metrics.map(m => `
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 10px; color: var(--color-smoke);">${m.label.toUpperCase()}</span>
+          <span style="font-size: 18px; font-weight: 700; color: #ffffff;">${m.value}</span>
+        </div>
+      `).join('');
+
+      const techDiv = document.getElementById('modal-tech');
+      techDiv.innerHTML = p.technologies.map(t => `
+        <span style="font-size: 11px; color: var(--color-pale-mist); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: var(--radius-md); border: 1px solid var(--color-ash-border);">${t}</span>
+      `).join('');
+
+      document.getElementById('project-modal').style.display = 'flex';
+    }
+
+    function closeProjectModal() {
+      document.getElementById('project-modal').style.display = 'none';
+    }
+
+    function dismissCookieBanner() {
+      document.getElementById('cookie-banner').style.display = 'none';
+    }
+
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      alert('Transmission dispatched successfully to command.');
+      closeContactModal();
+    }
+
+    // 3. Ambient Cosmic Audio Generator (Web Audio API)
+    let audioCtx = null;
+    let masterGain = null;
+    let isPlaying = false;
+
+    function initAudio() {
+      if (audioCtx) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioCtx();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(140, audioCtx.currentTime);
+      filter.Q.setValueAtTime(3, audioCtx.currentTime);
+
+      const subOsc = audioCtx.createOscillator();
+      subOsc.type = 'sine';
+      subOsc.frequency.setValueAtTime(55, audioCtx.currentTime);
+
+      const osc1 = audioCtx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(110, audioCtx.currentTime);
+      osc1.detune.setValueAtTime(4, audioCtx.currentTime);
+
+      const osc2 = audioCtx.createOscillator();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(164.81, audioCtx.currentTime);
+
+      subOsc.connect(filter);
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(masterGain);
+      masterGain.connect(audioCtx.destination);
+
+      subOsc.start();
+      osc1.start();
+      osc2.start();
+    }
+
+    function toggleAudio() {
+      initAudio();
+      if (!audioCtx) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const now = audioCtx.currentTime;
+      const btn = document.getElementById('audio-toggle-btn');
+      const icon = document.getElementById('audio-icon');
+
+      if (!isPlaying) {
+        masterGain.gain.cancelScheduledValues(now);
+        masterGain.gain.linearRampToValueAtTime(0.12, now + 1.2);
+        isPlaying = true;
+        btn.style.color = '#00f0ff';
+        btn.style.background = 'var(--surface-frosted-glass)';
+        icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+      } else {
+        masterGain.gain.cancelScheduledValues(now);
+        masterGain.gain.linearRampToValueAtTime(0, now + 0.8);
+        isPlaying = false;
+        btn.style.color = '#ffffff';
+        btn.style.background = 'transparent';
+        icon.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>';
+      }
+    }
+
+    // 4. Three.js Cosmic Void Scene
+    window.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('webgl-container');
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000);
+
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 11;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      const portalGroup = new THREE.Group();
+      scene.add(portalGroup);
+
+      // Wireframe Torus Portal with Cyan-to-Magenta gradient rim
+      const torusGeom = new THREE.TorusGeometry(2.6, 0.045, 16, 100);
+      const torusWireGeom = new THREE.TorusGeometry(2.75, 0.08, 12, 60);
+
+      const count = torusGeom.attributes.position.count;
+      const colors = new Float32Array(count * 3);
+      const colorCyan = new THREE.Color(0x00f0ff);
+      const colorMagenta = new THREE.Color(0xff007f);
+      const pos = torusGeom.attributes.position;
+
+      for (let i = 0; i < count; i++) {
+        const x = pos.getX(i);
+        const y = pos.getY(i);
+        const angle = Math.atan2(y, x);
+        const t = (Math.sin(angle) + 1.0) * 0.5;
+        const col = colorCyan.clone().lerp(colorMagenta, t);
+        colors[i * 3] = col.r;
+        colors[i * 3 + 1] = col.g;
+        colors[i * 3 + 2] = col.b;
+      }
+      torusGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const torusMat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95 });
+      const torusWireMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.25 });
+
+      portalGroup.add(new THREE.Mesh(torusGeom, torusMat));
+      portalGroup.add(new THREE.Mesh(torusWireGeom, torusWireMat));
+
+      // Orbit ring
+      const orbitGeom = new THREE.RingGeometry(3.3, 3.32, 80);
+      const orbitMat = new THREE.MeshBasicMaterial({ color: 0x4d4d4d, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+      portalGroup.add(new THREE.Mesh(orbitGeom, orbitMat));
+
+      // Internal Faceted Core (Rotating Octahedron & Icosahedron)
+      const coreGroup = new THREE.Group();
+      portalGroup.add(coreGroup);
+
+      const icosaGeom = new THREE.IcosahedronGeometry(1.25, 0);
+      const icosaMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.65 });
+      const icosaMesh = new THREE.Mesh(icosaGeom, icosaMat);
+      coreGroup.add(icosaMesh);
+
+      const octaGeom = new THREE.OctahedronGeometry(0.75, 0);
+      const octaMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.85 });
+      const octaMesh = new THREE.Mesh(octaGeom, octaMat);
+      coreGroup.add(octaMesh);
+
+      // Particle Fountain (1,600 specks: Green, Gold, Cyan, White)
+      const particleCount = 1600;
+      const particleGeom = new THREE.BufferGeometry();
+      const pPositions = new Float32Array(particleCount * 3);
+      const pColors = new Float32Array(particleCount * 3);
+      const pVelocities = new Float32Array(particleCount * 3);
+
+      const palette = [
+        new THREE.Color(0x00ff88),
+        new THREE.Color(0xffd700),
+        new THREE.Color(0x00f5d4),
+        new THREE.Color(0xffffff)
+      ];
+
+      function resetParticle(i, randomY = false) {
+        const r = Math.pow(Math.random(), 0.5) * 2.2;
+        const theta = Math.random() * Math.PI * 2;
+        pPositions[i * 3] = Math.cos(theta) * r;
+        pPositions[i * 3 + 1] = randomY ? (Math.random() * 12 - 6) : (Math.sin(theta) * r * 0.4 + 0.5);
+        pPositions[i * 3 + 2] = (Math.random() - 0.5) * 1.5;
+
+        pVelocities[i * 3] = (Math.random() - 0.5) * 0.008;
+        pVelocities[i * 3 + 1] = -(0.012 + Math.random() * 0.024);
+        pVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.006;
+
+        const col = palette[Math.floor(Math.random() * palette.length)];
+        pColors[i * 3] = col.r;
+        pColors[i * 3 + 1] = col.g;
+        pColors[i * 3 + 2] = col.b;
+      }
+
+      for (let i = 0; i < particleCount; i++) resetParticle(i, true);
+
+      particleGeom.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+      particleGeom.setAttribute('color', new THREE.BufferAttribute(pColors, 3));
+
+      // Circular Point Texture
+      const cCanvas = document.createElement('canvas');
+      cCanvas.width = 32; cCanvas.height = 32;
+      const cCtx = cCanvas.getContext('2d');
+      const grad = cCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      grad.addColorStop(0, 'rgba(255,255,255,1)');
+      grad.addColorStop(0.3, 'rgba(255,255,255,0.8)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      cCtx.fillStyle = grad;
+      cCtx.fillRect(0, 0, 32, 32);
+
+      const particleMat = new THREE.PointsMaterial({
+        size: 0.085,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending,
+        map: new THREE.CanvasTexture(cCanvas),
+        depthWrite: false
+      });
+
+      const particleSystem = new THREE.Points(particleGeom, particleMat);
+      scene.add(particleSystem);
+
+      // Mouse tracking
+      let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+      window.addEventListener('mousemove', (e) => {
+        targetX = (e.clientX / window.innerWidth) * 2 - 1;
+        targetY = -(e.clientY / window.innerHeight) * 2 + 1;
+      });
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      });
+
+      // Animation Loop
+      const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        const elapsed = clock.getElapsedTime();
+
+        mouseX += (targetX - mouseX) * 0.035;
+        mouseY += (targetY - mouseY) * 0.035;
+
+        portalGroup.rotation.y = mouseX * 0.35 + Math.sin(elapsed * 0.2) * 0.05;
+        portalGroup.rotation.x = -mouseY * 0.35 + Math.cos(elapsed * 0.25) * 0.04;
+        portalGroup.rotation.z = elapsed * 0.04;
+
+        icosaMesh.rotation.x = elapsed * 0.3;
+        icosaMesh.rotation.y = elapsed * 0.45;
+        octaMesh.rotation.y = -elapsed * 0.5;
+
+        const pulse = 1.0 + Math.sin(elapsed * 1.5) * 0.04;
+        coreGroup.scale.set(pulse, pulse, pulse);
+
+        const posAttr = particleGeom.attributes.position;
+        const arr = posAttr.array;
+
+        for (let i = 0; i < particleCount; i++) {
+          const idx = i * 3;
+          pVelocities[idx + 1] -= 0.00015;
+          arr[idx] += pVelocities[idx] + (mouseX * 0.003);
+          arr[idx + 1] += pVelocities[idx + 1];
+          arr[idx + 2] += pVelocities[idx + 2];
+          arr[idx] += Math.sin(elapsed * 1.2 + i) * 0.002;
+
+          if (arr[idx + 1] < -6.5 || Math.abs(arr[idx]) > 8) {
+            resetParticle(i, false);
+          }
+        }
+        posAttr.needsUpdate = true;
+
+        renderer.render(scene, camera);
+      }
+      animate();
+    });
+  </script>
+</body>
+</html>
